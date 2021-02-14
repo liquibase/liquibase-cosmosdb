@@ -53,19 +53,19 @@ class CreateItemChangeTest extends AbstractCosmosChangeTest {
             .hasOnlyElementsOfType(CreateItemChange.class);
 
         assertThat(changeSets.get(0).getChanges().get(0))
-            .hasFieldOrPropertyWithValue("containerName", "container1")
+            .hasFieldOrPropertyWithValue("containerId", "container1")
             .hasFieldOrPropertyWithValue("document", "{\"id\" : 1}");
 
         assertThat(changeSets.get(1).getChanges().get(0))
-            .hasFieldOrPropertyWithValue("containerName", "container2")
+            .hasFieldOrPropertyWithValue("containerId", "container2")
             .hasFieldOrPropertyWithValue("document", "{\"id\" : 1}");
 
         assertThat(changeSets.get(1).getChanges().get(1))
-            .hasFieldOrPropertyWithValue("containerName", "container3")
+            .hasFieldOrPropertyWithValue("containerId", "container3")
             .hasFieldOrPropertyWithValue("document", "{\"id\" : 1}");
 
         assertThat(changeSets.get(2).getChanges().get(0))
-            .hasFieldOrPropertyWithValue("containerName", "container4")
+            .hasFieldOrPropertyWithValue("containerId", "container4")
             .hasFieldOrPropertyWithValue("document", null);
     }
 }

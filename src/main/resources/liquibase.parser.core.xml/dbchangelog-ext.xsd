@@ -10,11 +10,11 @@
         <xsd:complexType>
 
             <xsd:sequence>
-                <xsd:element name="options" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-                <xsd:element name="throughput" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="containerProperties" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="throughputProperties" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             </xsd:sequence>
 
-            <xsd:attribute name="containerName" type="xsd:string" use="required"/>
+            <xsd:attribute name="containerId" type="xsd:string" use="required"/>
             <xsd:attribute name="skipExisting" type="xsd:boolean" use="optional" default="false"/>
 
         </xsd:complexType>
@@ -26,11 +26,11 @@
         <xsd:complexType>
 
             <xsd:sequence>
-                <xsd:element name="options" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-                <xsd:element name="throughput" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="containerProperties" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="throughputProperties" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             </xsd:sequence>
 
-            <xsd:attribute name="containerName" type="xsd:string" use="required"/>
+            <xsd:attribute name="containerId" type="xsd:string" use="required"/>
 
         </xsd:complexType>
 
@@ -40,7 +40,7 @@
 
         <xsd:complexType>
 
-            <xsd:attribute name="containerName" type="xsd:string" use="required"/>
+            <xsd:attribute name="containerId" type="xsd:string" use="required"/>
             <xsd:attribute name="skipMissing" type="xsd:boolean" use="optional" default="false"/>
 
         </xsd:complexType>
@@ -55,7 +55,7 @@
                 <xsd:element name="procedureProperties" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             </xsd:all>
 
-            <xsd:attribute name="containerName" type="xsd:string" use="required"/>
+            <xsd:attribute name="containerId" type="xsd:string" use="required"/>
             <xsd:attribute name="replaceExisting" type="xsd:boolean" use="optional" default="false"/>
 
         </xsd:complexType>
@@ -70,7 +70,7 @@
                 <xsd:element name="procedureProperties" type="xsd:string" minOccurs="1" maxOccurs="1"/>
             </xsd:all>
 
-            <xsd:attribute name="containerName" type="xsd:string" use="required"/>
+            <xsd:attribute name="containerId" type="xsd:string" use="required"/>
             <xsd:attribute name="skipMissing" type="xsd:boolean" use="optional" default="false"/>
 
         </xsd:complexType>
@@ -85,7 +85,7 @@
                 <xsd:element name="document" type="xsd:string"/>
             </xsd:all>
 
-            <xsd:attribute name="containerName" type="xsd:string" use="required"/>
+            <xsd:attribute name="containerId" type="xsd:string" use="required"/>
 
         </xsd:complexType>
 
@@ -99,7 +99,7 @@
                 <xsd:element name="document" type="xsd:string"/>
             </xsd:all>
 
-            <xsd:attribute name="containerName" type="xsd:string" use="required"/>
+            <xsd:attribute name="containerId" type="xsd:string" use="required"/>
 
         </xsd:complexType>
 
@@ -114,7 +114,7 @@
                 <xsd:element name="document" type="xsd:string"/>
             </xsd:all>
 
-            <xsd:attribute name="containerName" type="xsd:string" use="required"/>
+            <xsd:attribute name="containerId" type="xsd:string" use="required"/>
 
         </xsd:complexType>
 
@@ -128,7 +128,7 @@
                 <xsd:element name="query" type="xsd:string"/>
             </xsd:all>
 
-            <xsd:attribute name="containerName" type="xsd:string" use="required"/>
+            <xsd:attribute name="containerId" type="xsd:string" use="required"/>
 
         </xsd:complexType>
 

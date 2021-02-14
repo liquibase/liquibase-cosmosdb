@@ -27,7 +27,7 @@
     <changeSet id="1" author="alex">
         <comment>Create container</comment>
 
-        <ext:createContainer containerName="container1"/>
+        <ext:createContainer containerId="container1"/>
 
     </changeSet>
 
@@ -35,7 +35,7 @@
 
         <comment>Insert three items</comment>
 
-        <ext:createItem containerName="container1">
+        <ext:createItem containerId="container1">
             <ext:document>
                 <!-- @formatter:off -->
                 {
@@ -49,7 +49,7 @@
             </ext:document>
         </ext:createItem>
 
-        <ext:createItem containerName="container1">
+        <ext:createItem containerId="container1">
             <ext:document>
                 <!-- @formatter:off -->
                 {
@@ -63,7 +63,7 @@
             </ext:document>
         </ext:createItem>
 
-        <ext:createItem containerName="container1">
+        <ext:createItem containerId="container1">
             <ext:document>
                 <!-- @formatter:off -->
                 {
@@ -83,7 +83,7 @@
 
         <comment>Update each item by id</comment>
 
-        <ext:updateEachItem containerName="container1">
+        <ext:updateEachItem containerId="container1">
 
             <ext:query>
                 <!-- @formatter:off -->
@@ -116,7 +116,7 @@
 
         <comment>Update Will not affect anything by query</comment>
 
-    <ext:updateEachItem containerName="container1">
+    <ext:updateEachItem containerId="container1">
 
         <ext:query>
             <!-- @formatter:off -->

@@ -26,11 +26,11 @@
 
     <changeSet id="0" author="alex">
 
-        <ext:createContainer containerName="minimal"/>
+        <ext:createContainer containerId="minimal"/>
 
-        <ext:createContainer containerName="maximal">
+        <ext:createContainer containerId="maximal">
 
-            <ext:options>
+            <ext:containerProperties>
                 <!-- @formatter:off -->
                 {
                   "indexingPolicy": {
@@ -77,11 +77,11 @@
                   }
                 }
                 <!-- @formatter:on -->
-            </ext:options>
+            </ext:containerProperties>
 
-            <ext:throughput>
+            <ext:throughputProperties>
                 500
-            </ext:throughput>
+            </ext:throughputProperties>
 
         </ext:createContainer>
 
@@ -89,11 +89,11 @@
 
     <changeSet id="1" author="alex">
 
-        <ext:replaceContainer containerName="minimal"/>
+        <ext:replaceContainer containerId="minimal"/>
 
-        <ext:replaceContainer containerName="minimal">
-            <ext:options></ext:options>
-            <ext:throughput></ext:throughput>
+        <ext:replaceContainer containerId="minimal">
+            <ext:containerProperties></ext:containerProperties>
+            <ext:throughputProperties></ext:throughputProperties>
         </ext:replaceContainer>
 
     </changeSet>
@@ -101,9 +101,9 @@
     <changeSet id="2" author="alex">
         <comment>Maximum configured replaced containers</comment>
 
-        <ext:replaceContainer containerName="maximal">
+        <ext:replaceContainer containerId="maximal">
 
-            <ext:options>
+            <ext:containerProperties>
                 <!-- @formatter:off -->
                 <!--TODO: Uncomment when identified why replace failing. Currently just throughput change tested
                 {
@@ -166,11 +166,11 @@
                   }
                 }-->
                 <!-- @formatter:on -->
-            </ext:options>
+            </ext:containerProperties>
 
-            <ext:throughput>
+            <ext:throughputProperties>
                 {"maxThroughput": 8000}
-            </ext:throughput>
+            </ext:throughputProperties>
 
         </ext:replaceContainer>
 

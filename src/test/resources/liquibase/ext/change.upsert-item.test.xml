@@ -28,7 +28,7 @@
 
         <comment>Upsert an item with all supported types</comment>
 
-        <ext:upsertItem containerName="container1">
+        <ext:upsertItem containerId="container1">
 
             <ext:document>
                 {"id" : 1}
@@ -42,7 +42,7 @@
 
         <comment>Upsert Multiple Changes</comment>
 
-        <ext:upsertItem containerName="container2">
+        <ext:upsertItem containerId="container2">
 
             <ext:document>
                 {"id" : 1}
@@ -50,7 +50,7 @@
 
         </ext:upsertItem>
 
-        <ext:upsertItem containerName="container3">
+        <ext:upsertItem containerId="container3">
 
             <ext:document>
                 {"id" : 1}
@@ -64,7 +64,7 @@
 
         <comment>Empty Document</comment>
 
-        <ext:upsertItem containerName="container4">
+        <ext:upsertItem containerId="container4">
 
             <ext:document>
 

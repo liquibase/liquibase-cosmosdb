@@ -39,20 +39,20 @@ import lombok.Setter;
 @Setter
 public class CreateStoredProcedureChange extends AbstractCosmosChange {
 
-    private String containerName;
+    private String containerId;
     private String procedureProperties;
     private Boolean replaceExisting;
 
     @Override
     public String getConfirmationMessage() {
-        return "Stored Procedure created for: " + containerName;
+        return "Stored Procedure created for: " + containerId;
     }
 
     @Override
     public SqlStatement[] generateStatements(final Database database) {
 
         final CreateStoredProcedureStatement createStoredProcedureStatement =
-                        new CreateStoredProcedureStatement(containerName, procedureProperties, replaceExisting);
+                        new CreateStoredProcedureStatement(containerId, procedureProperties, replaceExisting);
 
         return new SqlStatement[]{
                 createStoredProcedureStatement

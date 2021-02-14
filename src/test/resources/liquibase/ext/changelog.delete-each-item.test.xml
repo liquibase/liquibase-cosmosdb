@@ -27,7 +27,7 @@
     <changeSet id="1" author="alex">
         <comment>Create container</comment>
 
-        <ext:createContainer containerName="deleteEachContainer1"/>
+        <ext:createContainer containerId="deleteEachContainer1"/>
 
     </changeSet>
 
@@ -35,7 +35,7 @@
 
         <comment>Insert three items</comment>
 
-        <ext:createItem containerName="deleteEachContainer1">
+        <ext:createItem containerId="deleteEachContainer1">
             <ext:document>
                 <!-- @formatter:off -->
                 {
@@ -46,7 +46,7 @@
             </ext:document>
         </ext:createItem>
 
-        <ext:createItem containerName="deleteEachContainer1">
+        <ext:createItem containerId="deleteEachContainer1">
             <ext:document>
                 <!-- @formatter:off -->
                 {
@@ -57,7 +57,7 @@
             </ext:document>
         </ext:createItem>
 
-        <ext:createItem containerName="deleteEachContainer1">
+        <ext:createItem containerId="deleteEachContainer1">
             <ext:document>
                 <!-- @formatter:off -->
                 {
@@ -74,7 +74,7 @@
 
         <comment>Delete each item by query</comment>
 
-        <ext:deleteEachItem containerName="deleteEachContainer1">
+        <ext:deleteEachItem containerId="deleteEachContainer1">
 
             <ext:query>
                 <!-- @formatter:off -->

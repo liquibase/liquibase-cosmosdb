@@ -27,9 +27,9 @@
     <changeSet id="1" author="alex">
         <comment>Create Procedure Container</comment>
 
-        <ext:createContainer containerName="procedureContainer1">
+        <ext:createContainer containerId="procedureContainer1">
 
-            <ext:options>
+            <ext:containerProperties>
                 <!-- @formatter:off -->
                 {
                     "partitionKey": {
@@ -40,7 +40,7 @@
                     }
                 }
                 <!-- @formatter:on -->
-            </ext:options>
+            </ext:containerProperties>
 
         </ext:createContainer>
 
@@ -49,7 +49,7 @@
     <changeSet id="2" author="alex">
         <comment>Create Stored Procedure</comment>
 
-        <ext:createStoredProcedure containerName="procedureContainer1">
+        <ext:createStoredProcedure containerId="procedureContainer1">
 
             <ext:procedureProperties>
                 <!-- @formatter:off -->
@@ -69,7 +69,7 @@
     <!--changeSet id="3" author="alex">
         <comment>Replace Stored Procedure</comment>
 
-        <ext:createStoredProcedure containerName="procedureContainer1">
+        <ext:createStoredProcedure containerId="procedureContainer1">
 
             <ext:procedureProperties>
                 <- @formatter:off ->
@@ -82,7 +82,7 @@
 
         </ext:createStoredProcedure>
 
-        <ext:createStoredProcedure containerName="procedureContainer1" replaceExisting="true">
+        <ext:createStoredProcedure containerId="procedureContainer1" replaceExisting="true">
 
             <ext:procedureProperties>
                 <- @formatter:off ->
@@ -100,7 +100,7 @@
     <changeSet id="4" author="alex">
         <comment>Delete Stored Procedure</comment>
 
-        <ext:createStoredProcedure containerName="procedureContainer1">
+        <ext:createStoredProcedure containerId="procedureContainer1">
 
             <ext:procedureProperties>
                 <!-- @formatter:off -->
@@ -113,7 +113,7 @@
 
         </ext:createStoredProcedure>
 
-        <ext:deleteStoredProcedure containerName="procedureContainer1">
+        <ext:deleteStoredProcedure containerId="procedureContainer1">
 
             <ext:procedureProperties>
                 <!-- @formatter:off -->

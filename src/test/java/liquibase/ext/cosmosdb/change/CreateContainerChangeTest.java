@@ -62,35 +62,35 @@ class CreateContainerChangeTest extends AbstractCosmosChangeTest {
                 .isNotNull()
                 .hasSize(2);
 
-        assertThat(changeSets.get(0).generateCheckSum()).isEqualTo(CheckSum.parse("8:868c41109ad4c6dd47707e31a3cab8c8"));
+        assertThat(changeSets.get(0).generateCheckSum()).isEqualTo(CheckSum.parse("8:f9a902bc0f602d3c8f0ce07ebd8bb90b"));
         assertThat(changeSets.get(0).getChanges())
                 .hasSize(5)
                 .hasOnlyElementsOfType(CreateContainerChange.class)
                 .extracting(c -> (CreateContainerChange) c)
                 .extracting(
-                        CreateContainerChange::getContainerName, CreateContainerChange::getSkipExisting, CreateContainerChange::getOptions, CreateContainerChange::getThroughput,
+                        CreateContainerChange::getContainerId, CreateContainerChange::getSkipExisting, CreateContainerChange::getContainerProperties, CreateContainerChange::getThroughputProperties,
                         Change::generateCheckSum, c -> c.generateStatements(database).length, c -> c.generateStatements(database)[0].getClass()
                 )
                 .containsExactly(
-                        tuple("minimal", null, null, null, CheckSum.parse("8:327fed49ce36964794facea53c0347d7"), 1, CreateContainerStatement.class),
-                        tuple("minimal", TRUE, null, null, CheckSum.parse("8:eca3cd04f26a6b48945dfb2babf5ceda"), 1, CreateContainerStatement.class),
-                        tuple("skipExisting", TRUE, null, null, CheckSum.parse("8:b3c7d43df39817432d284463344685d3"), 1, CreateContainerStatement.class),
-                        tuple("skipExisting", TRUE, null, null, CheckSum.parse("8:b3c7d43df39817432d284463344685d3"), 1, CreateContainerStatement.class),
-                        tuple("notSkipExisting", FALSE, null, null, CheckSum.parse("8:9d3d714841f4ebe33d6568a1d246efe9"), 1, CreateContainerStatement.class)
+                        tuple("minimal", null, null, null, CheckSum.parse("8:093e2225953ad4686ca0a89eeabc47ba"), 1, CreateContainerStatement.class),
+                        tuple("minimal", TRUE, null, null, CheckSum.parse("8:adad58b87e2ef854fd678f0b03565dfe"), 1, CreateContainerStatement.class),
+                        tuple("skipExisting", TRUE, null, null, CheckSum.parse("8:614e03910b2faf3e6983c894738a726a"), 1, CreateContainerStatement.class),
+                        tuple("skipExisting", TRUE, null, null, CheckSum.parse("8:614e03910b2faf3e6983c894738a726a"), 1, CreateContainerStatement.class),
+                        tuple("notSkipExisting", FALSE, null, null, CheckSum.parse("8:4b491837aa994bfab8801672021d47f6"), 1, CreateContainerStatement.class)
                 );
 
-        assertThat(changeSets.get(1).generateCheckSum()).isEqualTo(CheckSum.parse("8:d5eba9218b91327627c7174dd6630307"));
+        assertThat(changeSets.get(1).generateCheckSum()).isEqualTo(CheckSum.parse("8:be5d8bb6fd7531a948444b922ddedad2"));
         assertThat(changeSets.get(1).getChanges())
                 .hasSize(2)
                 .hasOnlyElementsOfType(CreateContainerChange.class)
                 .extracting(c -> (CreateContainerChange) c)
                 .extracting(
-                        CreateContainerChange::getContainerName, CreateContainerChange::getSkipExisting, c -> c.getOptions().length(), CreateContainerChange::getThroughput,
+                        CreateContainerChange::getContainerId, CreateContainerChange::getSkipExisting, c -> c.getContainerProperties().length(), CreateContainerChange::getThroughputProperties,
                         Change::generateCheckSum, c -> c.generateStatements(database).length, c -> c.generateStatements(database)[0].getClass()
                 )
                 .containsExactly(
-                        tuple("maximal", null, 1548, "500", CheckSum.parse("8:96ff35442800b98c8054b4c0b19a6817"), 1, CreateContainerStatement.class),
-                        tuple("maximalAutoRU", null, 790, "{\"maxThroughput\": 8000}", CheckSum.parse("8:ee1566c77e15d830c5b90edf1576067a"), 1, CreateContainerStatement.class)
+                        tuple("maximal", null, 1546, "500", CheckSum.parse("8:40b47a837cf71fa82bf2da026678cf16"), 1, CreateContainerStatement.class),
+                        tuple("maximalAutoRU", null, 790, "{\"maxThroughput\": 8000}", CheckSum.parse("8:cf350b32c69fd4fed73991f3b3f10ffd"), 1, CreateContainerStatement.class)
                 );
 
     }

@@ -28,7 +28,7 @@
 
         <comment>Insert an item with all supported types</comment>
 
-        <ext:createItem containerName="container1">
+        <ext:createItem containerId="container1">
 
             <ext:document>
                 {"id" : 1}
@@ -41,7 +41,7 @@
 
         <comment>Multiple Changes</comment>
 
-        <ext:createItem containerName="container2">
+        <ext:createItem containerId="container2">
 
             <ext:document>
                 {"id" : 1}
@@ -49,7 +49,7 @@
 
         </ext:createItem>
 
-        <ext:createItem containerName="container3">
+        <ext:createItem containerId="container3">
 
             <ext:document>
                 {"id" : 1}
@@ -63,7 +63,7 @@
 
         <comment>Empty Document</comment>
 
-        <ext:createItem containerName="container4">
+        <ext:createItem containerId="container4">
 
             <ext:document>
 

@@ -39,21 +39,21 @@ import lombok.Setter;
 @Setter
 public class CreateContainerChange extends AbstractCosmosChange {
 
-    private String containerName;
-    private String options;
-    private String throughput;
+    private String containerId;
+    private String ContainerProperties;
+    private String throughputProperties;
     private Boolean skipExisting;
 
     @Override
     public String getConfirmationMessage() {
-        return "Container created: " + containerName;
+        return "Container created: " + containerId;
     }
 
     @Override
     public SqlStatement[] generateStatements(final Database database) {
 
         final CreateContainerStatement createContainerStatement =
-                        new CreateContainerStatement(containerName, options, throughput, skipExisting);
+                        new CreateContainerStatement(containerId, ContainerProperties, throughputProperties, skipExisting);
 
         return new SqlStatement[]{
                 createContainerStatement

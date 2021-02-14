@@ -27,7 +27,7 @@
     <changeSet id="1" author="alex">
         <comment>Second container</comment>
 
-        <ext:createContainer containerName="container2"/>
+        <ext:createContainer containerId="container2"/>
 
     </changeSet>
 

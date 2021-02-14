@@ -39,19 +39,19 @@ import lombok.Setter;
 @Setter
 public class CreateItemChange extends AbstractCosmosChange {
 
-    private String containerName;
+    private String containerId;
     private String document;
 
     @Override
     public String getConfirmationMessage() {
-        return "Item inserted to container: " + containerName;
+        return "Item inserted to container: " + containerId;
     }
 
     @Override
     public SqlStatement[] generateStatements(final Database database) {
 
         final CreateItemStatement createItemStatement
-                = new CreateItemStatement(containerName, document);
+                = new CreateItemStatement(containerId, document);
 
         return new SqlStatement[]{
                 createItemStatement

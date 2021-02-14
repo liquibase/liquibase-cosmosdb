@@ -27,7 +27,7 @@
     <changeSet id="1" author="alex">
         <comment>Create container</comment>
 
-        <ext:createContainer containerName="container1"/>
+        <ext:createContainer containerId="container1"/>
 
     </changeSet>
 
@@ -35,7 +35,7 @@
 
         <comment>Insert an item with all supported types</comment>
 
-        <ext:createItem containerName="container1">
+        <ext:createItem containerId="container1">
 
             <ext:document>
                 <!-- @formatter:off -->

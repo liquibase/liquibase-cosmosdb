@@ -39,18 +39,18 @@ import lombok.Setter;
 @Setter
 public class DeleteContainerChange extends AbstractCosmosChange {
 
-    private String containerName;
+    private String containerId;
     private Boolean skipMissing;
 
     @Override
     public String getConfirmationMessage() {
-        return "Container deleted: " + containerName;
+        return "Container deleted: " + containerId;
     }
 
     @Override
     public SqlStatement[] generateStatements(final Database database) {
 
-        final DeleteContainerStatement deleteContainerStatement = new DeleteContainerStatement(containerName, skipMissing);
+        final DeleteContainerStatement deleteContainerStatement = new DeleteContainerStatement(containerId, skipMissing);
 
         return new SqlStatement[]{
                 deleteContainerStatement

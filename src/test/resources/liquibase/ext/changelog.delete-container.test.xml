@@ -27,28 +27,28 @@
     <changeSet id="1" author="alex">
         <comment>Create containers</comment>
 
-        <ext:createContainer containerName="container1"/>
+        <ext:createContainer containerId="container1"/>
 
-        <ext:createContainer containerName="container2"/>
+        <ext:createContainer containerId="container2"/>
 
-        <ext:createContainer containerName="container3"/>
+        <ext:createContainer containerId="container3"/>
 
-        <ext:createContainer containerName="container4"/>
+        <ext:createContainer containerId="container4"/>
 
     </changeSet>
 
     <changeSet id="2" author="alex">
         <comment>Delete containers</comment>
 
-        <ext:deleteContainer containerName="container1"/>
+        <ext:deleteContainer containerId="container1"/>
 
-        <ext:deleteContainer containerName="container2" skipMissing="false"/>
+        <ext:deleteContainer containerId="container2" skipMissing="false"/>
 
-        <ext:deleteContainer containerName="container3" skipMissing="true"/>
+        <ext:deleteContainer containerId="container3" skipMissing="true"/>
 
-        <ext:deleteContainer containerName="container3" skipMissing="true"/>
+        <ext:deleteContainer containerId="container3" skipMissing="true"/>
 
-        <ext:deleteContainer containerName="container5" skipMissing="true"/>
+        <ext:deleteContainer containerId="container5" skipMissing="true"/>
 
     </changeSet>
 

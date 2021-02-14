@@ -39,20 +39,20 @@ import lombok.Setter;
 @Setter
 public class DeleteStoredProcedureChange extends AbstractCosmosChange {
 
-    private String containerName;
+    private String containerId;
     private String procedureProperties;
     private Boolean skipMissing;
 
     @Override
     public String getConfirmationMessage() {
-        return "Stored Procedure deleted for: " + containerName;
+        return "Stored Procedure deleted for: " + containerId;
     }
 
     @Override
     public SqlStatement[] generateStatements(final Database database) {
 
         final DeleteStoredProcedureStatement deleteStoredProcedureStatement =
-                        new DeleteStoredProcedureStatement(containerName, procedureProperties, skipMissing);
+                        new DeleteStoredProcedureStatement(containerId, procedureProperties, skipMissing);
 
         return new SqlStatement[]{
                 deleteStoredProcedureStatement

@@ -40,20 +40,20 @@ import lombok.Setter;
 @Setter
 public class UpdateEachItemChange extends AbstractCosmosChange {
 
-    private String containerName;
+    private String containerId;
     private String query;
     private String document;
 
     @Override
     public String getConfirmationMessage() {
-        return "Items updated in container: " + containerName;
+        return "Items updated in container: " + containerId;
     }
 
     @Override
     public SqlStatement[] generateStatements(final Database database) {
 
         final UpdateEachItemStatement updateEachItemStatement
-                = new UpdateEachItemStatement(containerName, query, document);
+                = new UpdateEachItemStatement(containerId, query, document);
 
         return new SqlStatement[]{
                 updateEachItemStatement

@@ -39,19 +39,19 @@ import lombok.Setter;
 @Setter
 public class UpsertItemChange extends AbstractCosmosChange {
 
-    private String containerName;
+    private String containerId;
     private String document;
 
     @Override
     public String getConfirmationMessage() {
-        return "Item upserted in container: " + containerName;
+        return "Item upserted in container: " + containerId;
     }
 
     @Override
     public SqlStatement[] generateStatements(final Database database) {
 
         final UpsertItemStatement upsertItemStatement
-                = new UpsertItemStatement(containerName, document);
+                = new UpsertItemStatement(containerId, document);
 
         return new SqlStatement[]{
                 upsertItemStatement

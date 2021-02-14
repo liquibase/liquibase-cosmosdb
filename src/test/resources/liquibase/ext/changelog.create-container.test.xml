@@ -27,30 +27,30 @@
     <changeSet id="1" author="alex">
         <comment>Minimal configured containers</comment>
 
-        <ext:createContainer containerName="minimal"/>
+        <ext:createContainer containerId="minimal"/>
 
-        <ext:createContainer containerName="minimal" skipExisting="true"/>
+        <ext:createContainer containerId="minimal" skipExisting="true"/>
 
-        <ext:createContainer containerName="skipExisting" skipExisting="true"/>
+        <ext:createContainer containerId="skipExisting" skipExisting="true"/>
 
-        <ext:createContainer containerName="skipExisting" skipExisting="true">
-            <ext:options></ext:options>
-            <ext:throughput></ext:throughput>
+        <ext:createContainer containerId="skipExisting" skipExisting="true">
+            <ext:containerProperties></ext:containerProperties>
+            <ext:throughputProperties></ext:throughputProperties>
         </ext:createContainer>
 
-        <ext:createContainer containerName="notSkipExisting" skipExisting="false"/>
+        <ext:createContainer containerId="notSkipExisting" skipExisting="false"/>
 
     </changeSet>
 
     <changeSet id="2" author="alex">
         <comment>Maximum configured containers</comment>
 
-        <ext:createContainer containerName="maximal">
+        <ext:createContainer containerId="maximal">
 
-            <ext:options>
+            <ext:containerProperties>
                 <!-- @formatter:off -->
                 {
-                  "id": "Container Id will be taken from: containerName attribute",
+                  "id": "Container Id will be taken from: containerId attribute",
                   "indexingPolicy": {
                     "indexingMode": "Consistent",
                     "automatic": true,
@@ -95,17 +95,17 @@
                   }
                 }
                 <!-- @formatter:on -->
-            </ext:options>
+            </ext:containerProperties>
 
-            <ext:throughput>
+            <ext:throughputProperties>
                 500
-            </ext:throughput>
+            </ext:throughputProperties>
 
         </ext:createContainer>
 
-        <ext:createContainer containerName="maximalAutoRU">
+        <ext:createContainer containerId="maximalAutoRU">
 
-            <ext:options>
+            <ext:containerProperties>
                 <!-- @formatter:off -->
                 {
                   "indexingPolicy": {
@@ -133,11 +133,11 @@
                   }
                 }
                 <!-- @formatter:on -->
-            </ext:options>
+            </ext:containerProperties>
 
-            <ext:throughput>
+            <ext:throughputProperties>
                 {"maxThroughput": 8000}
-            </ext:throughput>
+            </ext:throughputProperties>
 
         </ext:createContainer>
 

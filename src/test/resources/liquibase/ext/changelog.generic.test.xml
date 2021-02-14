@@ -27,14 +27,14 @@
     <changeSet id="1" author="alex">
         <comment>A container with partition key path defined</comment>
 
-        <ext:createContainer containerName="container1"/>
+        <ext:createContainer containerId="container1"/>
 
     </changeSet>
 
     <changeSet id="2" author="alex">
         <comment>An Item inserted</comment>
 
-        <ext:createItem containerName="container1">
+        <ext:createItem containerId="container1">
         <ext:document>
             {
             "id" : "1111",
