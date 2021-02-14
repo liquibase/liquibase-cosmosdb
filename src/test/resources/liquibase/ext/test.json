@@ -1,0 +1,61 @@
+{
+  "indexingPolicy": {
+    "indexingMode": "Lazy",
+    "automatic": false,
+    "includedPaths": [
+      {
+        "path": "/*",
+        "indexes": [
+          {
+            "kind": "Range",
+            "dataType": "String",
+            "precision": -1
+          },
+          {
+            "kind": "Range",
+            "dataType": "Number",
+            "precision": -1
+          }
+        ]
+      },
+      {
+        "path": "/payload/*",
+        "indexes": [
+          {
+            "kind": "Range",
+            "dataType": "String",
+            "precision": -1
+          },
+          {
+            "kind": "Range",
+            "dataType": "Number",
+            "precision": -1
+          }
+        ]
+      }
+    ],
+    "excludedPaths": [
+      "/payload/detail/*"
+    ]
+  },
+  "partitionKey": {
+    "paths": [
+      "/accountNumber"
+    ],
+    "kind": "Hash"
+  },
+  "defaultTtl": 100,
+  "uniqueKeyPolicy": {
+    "uniqueKeys": [
+      {
+        "paths": [
+          "/transactionId"
+        ]
+      }
+    ]
+  },
+  "conflictResolutionPolicy": {
+    "mode": "LastWriterWins",
+    "conflictResolutionPath": "/path"
+  }
+}

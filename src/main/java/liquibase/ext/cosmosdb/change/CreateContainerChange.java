@@ -23,15 +23,11 @@ package liquibase.ext.cosmosdb.change;
 import liquibase.change.ChangeMetaData;
 import liquibase.change.DatabaseChange;
 import liquibase.database.Database;
-import liquibase.ext.cosmosdb.statement.CreateContainerIfNotExistsStatement;
 import liquibase.ext.cosmosdb.statement.CreateContainerStatement;
 import liquibase.statement.SqlStatement;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import static java.lang.Boolean.FALSE;
-import static java.util.Optional.ofNullable;
 
 @DatabaseChange(name = "createContainer",
         description = "Create container " +
@@ -45,6 +41,7 @@ public class CreateContainerChange extends AbstractCosmosChange {
 
     private String containerName;
     private String options;
+    private String throughput;
     private Boolean skipExisting;
 
     @Override
@@ -56,7 +53,7 @@ public class CreateContainerChange extends AbstractCosmosChange {
     public SqlStatement[] generateStatements(final Database database) {
 
         final CreateContainerStatement createContainerStatement =
-                ofNullable(skipExisting).orElse(FALSE) ? new CreateContainerIfNotExistsStatement(containerName, options) : new CreateContainerStatement(containerName, options);
+                        new CreateContainerStatement(containerName, options, throughput, skipExisting);
 
         return new SqlStatement[]{
                 createContainerStatement

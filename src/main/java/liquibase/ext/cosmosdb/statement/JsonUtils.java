@@ -24,15 +24,20 @@ import com.azure.cosmos.implementation.DocumentCollection;
 import com.azure.cosmos.implementation.JsonSerializable;
 import com.azure.cosmos.implementation.Utils;
 import com.azure.cosmos.models.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import liquibase.util.StringUtil;
+import com.fasterxml.jackson.databind.node.ContainerNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import lombok.NoArgsConstructor;
 import com.azure.cosmos.implementation.Document;
 
 import java.util.Map;
 
+import static com.azure.cosmos.implementation.Constants.Properties.AUTOPILOT_MAX_THROUGHPUT;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
+import static liquibase.util.StringUtil.isNotEmpty;
 import static liquibase.util.StringUtil.trimToNull;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -97,7 +102,7 @@ public final class JsonUtils {
     public static CosmosContainerProperties toContainerProperties(final String containerName, final String optionsJson) {
 
         final CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(containerName, DEFAULT_PARTITION_KEY_PATH);
-        if (StringUtil.isNotEmpty(StringUtil.trimToNull(optionsJson))) {
+        if (isNotEmpty(trimToNull(optionsJson))) {
             final DocumentCollection documentCollection = new DocumentCollection(optionsJson);
             if(nonNull(documentCollection.getPartitionKey())) {
                 cosmosContainerProperties.setPartitionKeyDefinition(documentCollection.getPartitionKey());
@@ -119,5 +124,24 @@ public final class JsonUtils {
             }
         }
         return cosmosContainerProperties;
+    }
+
+    public static ThroughputProperties toThroughputProperties(final String throughput) {
+
+        if (nonNull(trimToNull(throughput))) {
+            final TreeNode node;
+            try {
+                node = OBJECT_MAPPER.readTree(throughput);
+            } catch (final JsonProcessingException e) {
+                throw new IllegalArgumentException(String.format("Unable to parse JSON %s", throughput), e);
+            }
+            if(node.isValueNode()) {
+                return ThroughputProperties.createManualThroughput(((ValueNode)node).asInt());
+            }
+            if(node.isContainerNode() && ((ContainerNode<?>)node).has(AUTOPILOT_MAX_THROUGHPUT)) {
+                return ThroughputProperties.createAutoscaledThroughput(((ValueNode)node.get(AUTOPILOT_MAX_THROUGHPUT)).asInt());
+            }
+        }
+        return null;
     }
 }

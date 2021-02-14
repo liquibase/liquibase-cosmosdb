@@ -23,6 +23,8 @@ package liquibase.ext.cosmosdb;
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.models.CosmosContainerProperties;
 import com.azure.cosmos.models.CosmosStoredProcedureProperties;
+import com.azure.cosmos.models.IndexingMode;
+import com.azure.cosmos.models.ThroughputProperties;
 import liquibase.Liquibase;
 import liquibase.ext.cosmosdb.changelog.CosmosRanChangeSet;
 import liquibase.resource.ClassLoaderResourceAccessor;
@@ -77,7 +79,33 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
         final CosmosContainerProperties maximal = containerProperties.stream().filter(c -> c.getId().equals("maximal")).findFirst().orElse(null);
         assertThat(maximal).isNotNull();
 
-        assertThat(containerProperties).hasSize(5);
+        assertThat(containerProperties).hasSize(7);
+    }
+
+    @SneakyThrows
+    @Test
+    void testUpdateReplaceContainer() {
+        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.replace-container.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        liquibase.update("");
+        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName()).read()).isNotNull();
+
+        assertThat(cosmosDatabase.getContainer("minimal").read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer("minimal").read().getProperties()).isNotNull();
+        assertThat(cosmosDatabase.getContainer("minimal").readThroughput()).isNotNull();
+
+        final CosmosContainerProperties maximalProperties = cosmosDatabase.getContainer("maximal").read().getProperties();
+        assertThat(maximalProperties).isNotNull();
+        assertThat(maximalProperties.getId()).isEqualTo("maximal");
+        //TODO: Review after fixed replace
+        assertThat(maximalProperties.getIndexingPolicy().getIndexingMode()).isEqualTo(IndexingMode.CONSISTENT);
+        assertThat(maximalProperties.getIndexingPolicy().isAutomatic()).isTrue();
+        assertThat(maximalProperties.getIndexingPolicy().getIncludedPaths()).hasSize(1);
+        assertThat(maximalProperties.getIndexingPolicy().getExcludedPaths()).hasSize(1);
+
+        final ThroughputProperties maximalThroughput = cosmosDatabase.getContainer("maximal").readThroughput().getProperties();
+        assertThat(maximalThroughput).isNotNull();
+        assertThat(maximalThroughput.getAutoscaleMaxThroughput()).isEqualTo(8000);
     }
 
     @SneakyThrows

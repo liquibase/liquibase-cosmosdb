@@ -26,11 +26,41 @@ class CreateContainerStatementIT extends AbstractCosmosWithConnectionIntegration
         final CosmosContainer cosmosContainer = cosmosDatabase.getContainer(CONTAINER_NAME_1);
 
         assertThat(cosmosContainer).isNotNull();
-        assertThat(cosmosContainer.getId()).isEqualTo(CONTAINER_NAME_1);
+        assertThat(cosmosContainer.read().getProperties().getId()).isEqualTo(CONTAINER_NAME_1);
 
+        // should fail if tried once more
         assertThatExceptionOfType(CosmosException.class).isThrownBy(() -> createContainerStatement.execute(cosmosDatabase));
 
         assertThat(cosmosDatabase.getContainer("testcoll")).isNotNull();
+
+    }
+
+    @SneakyThrows
+    @Test
+    void testExecuteWithThroughput() {
+        CreateContainerStatement createContainerStatement
+                = new CreateContainerStatement("container_manual", PARTITION_KEY_PATH_1, "500");
+
+        createContainerStatement.execute(cosmosDatabase);
+
+        CosmosContainer cosmosContainer = cosmosDatabase.getContainer("container_manual");
+
+        assertThat(cosmosContainer).isNotNull();
+        assertThat(cosmosContainer.read().getProperties().getId()).isEqualTo("container_manual");
+        assertThat(cosmosContainer.readThroughput().getProperties().getManualThroughput()).isEqualTo(500);
+
+        // AutoscaleMaxThroughput
+
+        createContainerStatement
+                = new CreateContainerStatement("container_auto", PARTITION_KEY_PATH_1, "{\"maxThroughput\": 8000}");
+
+        createContainerStatement.execute(cosmosDatabase);
+
+        cosmosContainer = cosmosDatabase.getContainer("container_auto");
+
+        assertThat(cosmosContainer).isNotNull();
+        assertThat(cosmosContainer.read().getProperties().getId()).isEqualTo("container_auto");
+        assertThat(cosmosContainer.readThroughput().getProperties().getAutoscaleMaxThroughput()).isEqualTo(8000);
 
     }
 }

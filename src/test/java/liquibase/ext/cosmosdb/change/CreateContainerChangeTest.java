@@ -20,62 +20,78 @@ package liquibase.ext.cosmosdb.change;
  * #L%
  */
 
+import liquibase.change.Change;
+import liquibase.change.CheckSum;
+import liquibase.changelog.ChangeSet;
+import liquibase.database.core.PostgresDatabase;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.ext.cosmosdb.statement.CreateContainerStatement;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static liquibase.ext.cosmosdb.TestUtils.getChangeSets;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 class CreateContainerChangeTest extends AbstractCosmosChangeTest {
 
     @Test
     void getConfirmationMessage() {
         assertThat(new CreateContainerChange().getConfirmationMessage())
-            .isNotNull();
+                .isNotNull();
+    }
+
+    @Test
+    void supports() {
+        assertThat(new CreateContainerChange().supports(new CosmosLiquibaseDatabase())).isTrue();
+        assertThat(new CreateContainerChange().supports(new PostgresDatabase())).isFalse();
     }
 
     @Test
     @SneakyThrows
+    @SuppressWarnings("unchecked")
     void testGenerateStatements() {
 
-        //TODO: fix
+        final List<ChangeSet> changeSets = getChangeSets("liquibase/ext/changelog.create-container.test.xml", database);
 
-//        final List<ChangeSet> changeSets = getChangesets("liquibase/ext/changelog.create-container.test.xml", database);
-//
-//        assertThat(changeSets)
-//            .isNotNull()
-//            .hasSize(1);
-//        assertThat(changeSets.get(0).getChanges())
-//            .hasSize(3)
-//            .hasOnlyElementsOfType(CreateContainerChange.class);
-//
-//        final CreateContainerChange ch1 = (CreateContainerChange) changeSets.get(0).getChanges().get(0);
-//        assertThat(ch1.getContainerName()).isEqualTo("createCollectionWithValidatorAndOptionsTest");
-//        assertThat(ch1.getPartitionKeyPath()).isNotBlank();
-//        final SqlStatement[] sqlStatement1 = ch1.generateStatements(database);
-//        assertThat(sqlStatement1)
-//            .hasSize(1);
-//        assertThat(((CreateContainerStatement) sqlStatement1[0]))
-//            .hasNoNullFieldsOrProperties()
-//            .hasFieldOrPropertyWithValue("collectionName", "createCollectionWithValidatorAndOptionsTest");
-//
-//        final CreateContainerChange ch2 = (CreateContainerChange) changeSets.get(0).getChanges().get(1);
-//        assertThat(ch2.getContainerName()).isEqualTo("createCollectionWithEmptyValidatorTest");
-//        assertThat(ch2.getPartitionKeyPath()).isBlank();
-//        final SqlStatement[] sqlStatement2 = ch2.generateStatements(database);
-//        assertThat(sqlStatement2)
-//            .hasSize(1);
-//        assertThat(((CreateContainerStatement) sqlStatement2[0]))
-//            .hasNoNullFieldsOrPropertiesExcept("options")
-//            .hasFieldOrPropertyWithValue("collectionName", "createCollectionWithEmptyValidatorTest");
-//
-//        final CreateContainerChange ch3 = (CreateContainerChange) changeSets.get(0).getChanges().get(2);
-//        assertThat(ch3.getContainerName()).isEqualTo("createCollectionWithNoValidator");
-//        assertThat(ch3.getPartitionKeyPath()).isBlank();
-//        final SqlStatement[] sqlStatement3 = ch3.generateStatements(database);
-//        assertThat(sqlStatement3)
-//            .hasSize(1);
-//        assertThat(((CreateContainerStatement) sqlStatement3[0]))
-//            .hasNoNullFieldsOrPropertiesExcept("options")
-//            .hasFieldOrPropertyWithValue("collectionName", "createCollectionWithNoValidator");
+        assertThat(changeSets)
+                .isNotNull()
+                .hasSize(2);
+
+        assertThat(changeSets.get(0).generateCheckSum()).isEqualTo(CheckSum.parse("8:868c41109ad4c6dd47707e31a3cab8c8"));
+        assertThat(changeSets.get(0).getChanges())
+                .hasSize(5)
+                .hasOnlyElementsOfType(CreateContainerChange.class)
+                .extracting(c -> (CreateContainerChange) c)
+                .extracting(
+                        CreateContainerChange::getContainerName, CreateContainerChange::getSkipExisting, CreateContainerChange::getOptions, CreateContainerChange::getThroughput,
+                        Change::generateCheckSum, c -> c.generateStatements(database).length, c -> c.generateStatements(database)[0].getClass()
+                )
+                .containsExactly(
+                        tuple("minimal", null, null, null, CheckSum.parse("8:327fed49ce36964794facea53c0347d7"), 1, CreateContainerStatement.class),
+                        tuple("minimal", TRUE, null, null, CheckSum.parse("8:eca3cd04f26a6b48945dfb2babf5ceda"), 1, CreateContainerStatement.class),
+                        tuple("skipExisting", TRUE, null, null, CheckSum.parse("8:b3c7d43df39817432d284463344685d3"), 1, CreateContainerStatement.class),
+                        tuple("skipExisting", TRUE, null, null, CheckSum.parse("8:b3c7d43df39817432d284463344685d3"), 1, CreateContainerStatement.class),
+                        tuple("notSkipExisting", FALSE, null, null, CheckSum.parse("8:9d3d714841f4ebe33d6568a1d246efe9"), 1, CreateContainerStatement.class)
+                );
+
+        assertThat(changeSets.get(1).generateCheckSum()).isEqualTo(CheckSum.parse("8:d5eba9218b91327627c7174dd6630307"));
+        assertThat(changeSets.get(1).getChanges())
+                .hasSize(2)
+                .hasOnlyElementsOfType(CreateContainerChange.class)
+                .extracting(c -> (CreateContainerChange) c)
+                .extracting(
+                        CreateContainerChange::getContainerName, CreateContainerChange::getSkipExisting, c -> c.getOptions().length(), CreateContainerChange::getThroughput,
+                        Change::generateCheckSum, c -> c.generateStatements(database).length, c -> c.generateStatements(database)[0].getClass()
+                )
+                .containsExactly(
+                        tuple("maximal", null, 1548, "500", CheckSum.parse("8:96ff35442800b98c8054b4c0b19a6817"), 1, CreateContainerStatement.class),
+                        tuple("maximalAutoRU", null, 790, "{\"maxThroughput\": 8000}", CheckSum.parse("8:ee1566c77e15d830c5b90edf1576067a"), 1, CreateContainerStatement.class)
+                );
+
     }
 }

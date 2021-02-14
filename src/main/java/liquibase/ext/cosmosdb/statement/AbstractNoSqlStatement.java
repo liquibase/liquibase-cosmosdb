@@ -38,4 +38,9 @@ public abstract class AbstractNoSqlStatement extends AbstractSqlStatement {
 
     public abstract String toJs();
 
+    @Override
+    public String toString() {
+        return toJs();
+    }
+
 }

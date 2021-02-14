@@ -50,19 +50,22 @@ All subsequent changes are applied to the created DB.
 
 * createContainer [REST](https://docs.microsoft.com/en-us/rest/api/cosmos-db/create-a-collection) [SDK](https://docs.microsoft.com/en-us/java/api/com.azure.cosmos.cosmosdatabase.createcontainer?view=azure-java-stable)
 <p> 
-Creates a Cosmos container while passing additional request options. 
+Creates a Cosmos container while passing additional request properties.
+There is a possibility to pass throughput properties either manual as a number or auto as a json.
 There is a flag to skip if exists and do not fail.
-If no options are specified then a ``/null`` partition key path is the default one.
+If no properties are specified then a ``/null`` partition key path is the default one.
 </p>
 
 * replaceContainer [REST](https://docs.microsoft.com/en-us/rest/api/cosmos-db/replace-a-collection) [SDK](https://docs.microsoft.com/en-us/java/api/com.azure.cosmos.cosmoscontainer.replace?view=azure-java-stable)
 <p>
-Replaces the container properties by container name.
+Replaces the container properties by container id.
+There is a possibility to pass throughput properties either manual as a number or auto as a json.
+If only properties specified no throughput properties will be amended and viceversa.
 </p>
 
 * deleteContainer [REST](https://docs.microsoft.com/en-us/rest/api/cosmos-db/delete-a-collection) [SDK](https://docs.microsoft.com/en-us/java/api/com.azure.cosmos.cosmoscontainer.delete?view=azure-java-stable)
 <p>
-Deletes the Cosmos container by name.
+Deletes the Cosmos container by id.
 There is a flag to skip if missing and do not fail.
 </p>
 

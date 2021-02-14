@@ -24,6 +24,7 @@ import liquibase.change.ChangeMetaData;
 import liquibase.change.DatabaseChange;
 import liquibase.database.Database;
 import liquibase.ext.cosmosdb.statement.CreateContainerStatement;
+import liquibase.ext.cosmosdb.statement.ReplaceContainerStatement;
 import liquibase.statement.SqlStatement;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,6 +43,7 @@ public class ReplaceContainerChange extends AbstractCosmosChange {
 
     private String containerName;
     private String options;
+    private String throughput;
 
     @Override
     public String getConfirmationMessage() {
@@ -52,7 +54,7 @@ public class ReplaceContainerChange extends AbstractCosmosChange {
     public SqlStatement[] generateStatements(final Database database) {
 
         final CreateContainerStatement createContainerStatement
-                = new CreateContainerStatement(containerName, options);
+                = new ReplaceContainerStatement(containerName, options, throughput);
 
         return new SqlStatement[]{
                 createContainerStatement

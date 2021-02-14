@@ -22,10 +22,16 @@ package liquibase.ext.cosmosdb.statement;
 
 import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.models.CosmosContainerProperties;
+import com.azure.cosmos.models.ThroughputProperties;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import static java.lang.Boolean.FALSE;
+import static java.util.Optional.ofNullable;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.toContainerProperties;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.toThroughputProperties;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,8 +41,18 @@ public class CreateContainerStatement extends AbstractNoSqlStatement implements 
 
     public static final String COMMAND_NAME = "createContainer";
 
-    protected String containerName;
-    protected String options;
+    private String containerName;
+    private String options;
+    private String throughput;
+    private Boolean skipExisting;
+
+    public CreateContainerStatement(final String containerName, final String options, final String throughput) {
+        this(containerName, options, throughput, FALSE);
+    }
+
+    public CreateContainerStatement(final String containerName, final String options) {
+        this(containerName, options, null);
+    }
 
     public CreateContainerStatement(final String containerName) {
         this(containerName, null);
@@ -53,22 +69,25 @@ public class CreateContainerStatement extends AbstractNoSqlStatement implements 
                 "db."
                         + getCommandName()
                         + "("
-                        + containerName
+                        + getContainerName()
                         + ", "
-                        + options
+                        + getOptions()
+                        + ", "
+                        + getThroughput()
+                        + ", "
+                        + getSkipExisting()
                         + ");";
     }
 
     @Override
     public void execute(final CosmosDatabase cosmosDatabase) {
-
-        final CosmosContainerProperties cosmosContainerProperties = JsonUtils.toContainerProperties(containerName, options);
-        cosmosDatabase.createContainer(cosmosContainerProperties);
+        final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerName(), getOptions());
+        final ThroughputProperties throughputProperties = toThroughputProperties(getThroughput());
+        if (ofNullable(skipExisting).orElse(FALSE)) {
+            cosmosDatabase.createContainerIfNotExists(cosmosContainerProperties, throughputProperties);
+        } else {
+            cosmosDatabase.createContainer(cosmosContainerProperties, throughputProperties);
+        }
     }
 
-
-    @Override
-    public String toString() {
-        return toJs();
-    }
 }

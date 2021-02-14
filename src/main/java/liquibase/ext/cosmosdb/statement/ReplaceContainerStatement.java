@@ -22,9 +22,15 @@ package liquibase.ext.cosmosdb.statement;
 
 import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.models.CosmosContainerProperties;
+import com.azure.cosmos.models.ThroughputProperties;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+
+import static java.util.Objects.nonNull;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.toContainerProperties;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.toThroughputProperties;
+import static liquibase.util.StringUtil.trimToNull;
 
 @AllArgsConstructor
 @Getter
@@ -33,8 +39,8 @@ public class ReplaceContainerStatement extends CreateContainerStatement {
 
     public static final String COMMAND_NAME = "replaceContainer";
 
-    public ReplaceContainerStatement(final String containerName, final String options) {
-        super(containerName, options);
+    public ReplaceContainerStatement(final String containerName, final String options, String throughput) {
+        super(containerName, options, throughput);
     }
 
     @Override
@@ -44,8 +50,14 @@ public class ReplaceContainerStatement extends CreateContainerStatement {
 
     @Override
     public void execute(final CosmosDatabase cosmosDatabase) {
-        final CosmosContainerProperties cosmosContainerProperties = JsonUtils.toContainerProperties(containerName, options);
-        cosmosDatabase.getContainer(containerName).replace(cosmosContainerProperties);
+        if(nonNull(trimToNull(getOptions()))) {
+            final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerName(), getOptions());
+            cosmosDatabase.getContainer(getContainerName()).replace(cosmosContainerProperties);
+        }
+        if(nonNull(trimToNull(getThroughput()))) {
+            final ThroughputProperties throughputProperties = toThroughputProperties(getThroughput());
+            cosmosDatabase.getContainer(getContainerName()).replaceThroughput(throughputProperties);
+        }
     }
 
     @Override

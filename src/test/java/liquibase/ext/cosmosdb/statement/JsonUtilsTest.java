@@ -22,12 +22,14 @@ package liquibase.ext.cosmosdb.statement;
 
 import com.azure.cosmos.implementation.Document;
 import com.azure.cosmos.models.SqlQuerySpec;
+import com.azure.cosmos.models.ThroughputProperties;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
 import static liquibase.ext.cosmosdb.statement.JsonUtils.mergeDocuments;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptyDocument;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.toThroughputProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -193,11 +195,28 @@ class JsonUtilsTest {
         assertThat(source.get("LastName")).isEqualTo("AndersenFromSource");
         assertThat(source.getList("Parents", Map.class, false)).hasSize(1);
         assertThat(source.getList("Children", Map.class, false)).isNull();
-        assertThat((Map<String, Object>)source.getObject("Address", Map.class))
+        assertThat((Map<String, Object>) source.getObject("Address", Map.class))
                 .hasFieldOrPropertyWithValue("State", "WAFromSource")
                 .hasFieldOrPropertyWithValue("County", "KingFromSource")
                 .containsKey("City").hasFieldOrPropertyWithValue("City", null);
         assertThat(source.get("DestinationOnly")).isNull();
         assertThat(source.get("SourceOnly")).isEqualTo(true);
+    }
+
+    @Test
+    @SuppressWarnings("ConstantConditions")
+    void testToThroughputProperties() {
+        assertThat(toThroughputProperties(null)).isNull();
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> toThroughputProperties("{500}"))
+                .withMessage("Unable to parse JSON {500}");
+
+        assertThat(toThroughputProperties("500")).isNotNull()
+                .returns(500, ThroughputProperties::getManualThroughput)
+                .returns(0, ThroughputProperties::getAutoscaleMaxThroughput);
+
+        assertThat(toThroughputProperties(" {\"maxThroughput\": 800}")).isNotNull()
+                .returns(800, ThroughputProperties::getAutoscaleMaxThroughput);
+
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> toThroughputProperties(" {\"maxThroughput\": 800}").getManualThroughput());
     }
 }
