@@ -6,10 +6,10 @@ services:
   - docker
   
 before_script:
-  - choco install openjdk8
-  - export JAVA_HOME='/c/Program Files/OpenJDK/openjdk-8u275-b01'
+  - choco install openjdk8 --version 8.282.08
+  - export JAVA_HOME='/c/Program Files/OpenJDK/openjdk-8u282-b08'
   - echo $JAVA_HOME
-  - choco install maven
+  - choco install maven --version 3.6.3
   - export M2_HOME=/c/ProgramData/chocolatey/lib/maven/apache-maven-3.6.3
   - echo $M2_HOME
   - echo $PATH
