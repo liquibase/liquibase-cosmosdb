@@ -105,7 +105,7 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
 
         final ThroughputProperties maximalThroughput = cosmosDatabase.getContainer("maximal").readThroughput().getProperties();
         assertThat(maximalThroughput).isNotNull();
-        assertThat(maximalThroughput.getAutoscaleMaxThroughput()).isEqualTo(8000);
+        assertThat(maximalThroughput.getManualThroughput()).isEqualTo(800);
     }
 
     @SneakyThrows

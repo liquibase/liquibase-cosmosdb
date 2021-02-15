@@ -169,7 +169,7 @@
             </ext:containerProperties>
 
             <ext:throughputProperties>
-                {"maxThroughput": 8000}
+                800
             </ext:throughputProperties>
 
         </ext:replaceContainer>

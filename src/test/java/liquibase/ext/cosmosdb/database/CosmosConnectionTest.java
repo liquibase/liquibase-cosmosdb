@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import static com.azure.cosmos.implementation.apachecommons.lang.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -64,5 +65,19 @@ class CosmosConnectionTest {
         assertThat(connection.getCosmosDatabase()).isNull();
         assertThat(connection.getCosmosClient()).isNull();
         assertThat(connection.isClosed()).isTrue();
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldNotCloseResetIfAlreadyClosed() {
+        CosmosConnection connection = new CosmosConnection();
+
+        when(driverMock.connect(any())).thenReturn(clientMock);
+        when(clientMock.getDatabase(any())).thenReturn(databaseMock);
+        connection.open(TEST_COSMOS_JSON_CONNECTION_STRING_1, driverMock, propertiesMock);
+
+        connection.close();
+
+        assertThatCode(connection::close).doesNotThrowAnyException();
     }
 }

@@ -164,8 +164,10 @@ public class CosmosConnection implements DatabaseConnection {
     @Override
     public void close() throws DatabaseException {
         try {
-            this.cosmosClient.close();
-            reset();
+            if (!isClosed()) {
+                this.cosmosClient.close();
+                reset();
+            }
         } catch (final Exception e) {
             throw new DatabaseException(e);
         }
