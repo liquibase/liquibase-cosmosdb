@@ -53,7 +53,7 @@ public class CreateContainerChange extends AbstractCosmosChange {
     public SqlStatement[] generateStatements(final Database database) {
 
         final CreateContainerStatement createContainerStatement =
-                        new CreateContainerStatement(containerId, ContainerProperties, throughputProperties, skipExisting);
+                new CreateContainerStatement(containerId, ContainerProperties, throughputProperties, skipExisting);
 
         return new SqlStatement[]{
                 createContainerStatement

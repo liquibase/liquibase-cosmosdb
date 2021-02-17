@@ -39,7 +39,7 @@ public class ReplaceContainerStatement extends CreateContainerStatement {
 
     public static final String COMMAND_NAME = "replaceContainer";
 
-    public ReplaceContainerStatement(final String containerName, final String options, String throughput) {
+    public ReplaceContainerStatement(final String containerName, final String options, final String throughput) {
         super(containerName, options, throughput);
     }
 
@@ -50,11 +50,11 @@ public class ReplaceContainerStatement extends CreateContainerStatement {
 
     @Override
     public void execute(final CosmosDatabase cosmosDatabase) {
-        if(nonNull(trimToNull(getOptions()))) {
+        if (nonNull(trimToNull(getOptions()))) {
             final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerName(), getOptions());
             cosmosDatabase.getContainer(getContainerName()).replace(cosmosContainerProperties);
         }
-        if(nonNull(trimToNull(getThroughput()))) {
+        if (nonNull(trimToNull(getThroughput()))) {
             final ThroughputProperties throughputProperties = toThroughputProperties(getThroughput());
             cosmosDatabase.getContainer(getContainerName()).replaceThroughput(throughputProperties);
         }

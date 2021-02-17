@@ -26,7 +26,9 @@ import com.azure.cosmos.models.SqlQuerySpec;
 
 import java.util.Map;
 
-import static liquibase.ext.cosmosdb.statement.JsonUtils.*;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.COSMOS_ID_FIELD;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.DEFAULT_PARTITION_KEY_PERSIST;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptySqlQuerySpec;
 
 public class DeleteEachItemStatement extends AbstractNoSqlContainerStatement implements NoSqlExecuteStatement {
 
@@ -45,7 +47,7 @@ public class DeleteEachItemStatement extends AbstractNoSqlContainerStatement imp
     }
 
     public DeleteEachItemStatement() {
-        this(null, (String)null);
+        this(null, (String) null);
     }
 
     @Override
@@ -54,7 +56,7 @@ public class DeleteEachItemStatement extends AbstractNoSqlContainerStatement imp
 
         //TODO: Test with partitions, not clear which one will be deleted
         cosmosContainer.queryItems(query, null, Map.class).stream()
-                .forEach(d -> cosmosContainer.deleteItem((String) d.get(COSMOS_ID_FIELD), DEFAULT_PARTITION_KEY_PERSIST,null));
+                .forEach(d -> cosmosContainer.deleteItem((String) d.get(COSMOS_ID_FIELD), DEFAULT_PARTITION_KEY_PERSIST, null));
     }
 
     @Override

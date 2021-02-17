@@ -69,7 +69,7 @@ public class DeleteContainerStatement extends AbstractNoSqlContainerStatement im
 
     @Override
     public void execute(final CosmosDatabase cosmosDatabase) {
-        if(TRUE.equals(skipMissing) && cosmosDatabase.readAllContainers()
+        if (TRUE.equals(skipMissing) && cosmosDatabase.readAllContainers()
                 .stream().map(CosmosContainerProperties::getId).noneMatch(c -> c.equals(containerName))) {
             return;
         }

@@ -22,9 +22,9 @@ package liquibase.ext.cosmosdb.statement;
 
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.CosmosDatabase;
+import com.azure.cosmos.implementation.Document;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import com.azure.cosmos.implementation.Document;
 
 import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptyDocument;
 
@@ -46,8 +46,8 @@ public class CreateItemStatement extends AbstractNoSqlContainerStatement impleme
     }
 
     public CreateItemStatement() {
-       super(null);
-       this.document = null;
+        super(null);
+        this.document = null;
     }
 
     @Override

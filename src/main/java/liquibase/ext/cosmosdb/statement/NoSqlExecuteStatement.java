@@ -24,6 +24,6 @@ import com.azure.cosmos.CosmosDatabase;
 
 public interface NoSqlExecuteStatement {
 
-   void execute(CosmosDatabase cosmosDatabase);
+    void execute(CosmosDatabase cosmosDatabase);
 
 }

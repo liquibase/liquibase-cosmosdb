@@ -24,6 +24,6 @@ import com.azure.cosmos.CosmosDatabase;
 
 public interface NoSqlQueryForObjectStatement {
 
-   <T> T queryForObject(CosmosDatabase cosmosDatabase, Class<T> requiredType);
+    <T> T queryForObject(CosmosDatabase cosmosDatabase, Class<T> requiredType);
 
 }

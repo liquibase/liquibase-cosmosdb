@@ -52,7 +52,7 @@ public class CreateStoredProcedureChange extends AbstractCosmosChange {
     public SqlStatement[] generateStatements(final Database database) {
 
         final CreateStoredProcedureStatement createStoredProcedureStatement =
-                        new CreateStoredProcedureStatement(containerId, procedureProperties, replaceExisting);
+                new CreateStoredProcedureStatement(containerId, procedureProperties, replaceExisting);
 
         return new SqlStatement[]{
                 createStoredProcedureStatement

@@ -52,7 +52,7 @@ public class DeleteStoredProcedureChange extends AbstractCosmosChange {
     public SqlStatement[] generateStatements(final Database database) {
 
         final DeleteStoredProcedureStatement deleteStoredProcedureStatement =
-                        new DeleteStoredProcedureStatement(containerId, procedureProperties, skipMissing);
+                new DeleteStoredProcedureStatement(containerId, procedureProperties, skipMissing);
 
         return new SqlStatement[]{
                 deleteStoredProcedureStatement

@@ -20,17 +20,22 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
+import com.azure.cosmos.implementation.Document;
 import com.azure.cosmos.implementation.DocumentCollection;
 import com.azure.cosmos.implementation.JsonSerializable;
 import com.azure.cosmos.implementation.Utils;
-import com.azure.cosmos.models.*;
+import com.azure.cosmos.models.CosmosContainerProperties;
+import com.azure.cosmos.models.CosmosStoredProcedureProperties;
+import com.azure.cosmos.models.PartitionKey;
+import com.azure.cosmos.models.SqlParameter;
+import com.azure.cosmos.models.SqlQuerySpec;
+import com.azure.cosmos.models.ThroughputProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import lombok.NoArgsConstructor;
-import com.azure.cosmos.implementation.Document;
 
 import java.util.Map;
 
@@ -86,8 +91,8 @@ public final class JsonUtils {
 
         return ofNullable(trimToNull(json)).map(JsonSerializable::new)
                 .map(js -> new CosmosStoredProcedureProperties(
-                 js.getString("id"),
-                js.getString("body"))).orElse(new CosmosStoredProcedureProperties(null, null));
+                        js.getString("id"),
+                        js.getString("body"))).orElse(new CosmosStoredProcedureProperties(null, null));
     }
 
     public static Document fromMap(final Map<?, ?> source) {
@@ -104,22 +109,22 @@ public final class JsonUtils {
         final CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(containerName, DEFAULT_PARTITION_KEY_PATH);
         if (isNotEmpty(trimToNull(optionsJson))) {
             final DocumentCollection documentCollection = new DocumentCollection(optionsJson);
-            if(nonNull(documentCollection.getPartitionKey())) {
+            if (nonNull(documentCollection.getPartitionKey())) {
                 cosmosContainerProperties.setPartitionKeyDefinition(documentCollection.getPartitionKey());
             }
-            if(nonNull(documentCollection.getIndexingPolicy())) {
+            if (nonNull(documentCollection.getIndexingPolicy())) {
                 cosmosContainerProperties.setIndexingPolicy(documentCollection.getIndexingPolicy());
             }
-            if(nonNull(documentCollection.getUniqueKeyPolicy())) {
+            if (nonNull(documentCollection.getUniqueKeyPolicy())) {
                 cosmosContainerProperties.setUniqueKeyPolicy(documentCollection.getUniqueKeyPolicy());
             }
-            if(nonNull(documentCollection.getAnalyticalStoreTimeToLiveInSeconds())) {
+            if (nonNull(documentCollection.getAnalyticalStoreTimeToLiveInSeconds())) {
                 cosmosContainerProperties.setAnalyticalStoreTimeToLiveInSeconds(documentCollection.getAnalyticalStoreTimeToLiveInSeconds());
             }
-            if(nonNull(documentCollection.getDefaultTimeToLive())) {
+            if (nonNull(documentCollection.getDefaultTimeToLive())) {
                 cosmosContainerProperties.setDefaultTimeToLiveInSeconds(documentCollection.getDefaultTimeToLive());
             }
-            if(nonNull(documentCollection.getConflictResolutionPolicy())) {
+            if (nonNull(documentCollection.getConflictResolutionPolicy())) {
                 cosmosContainerProperties.setConflictResolutionPolicy(documentCollection.getConflictResolutionPolicy());
             }
         }
@@ -135,11 +140,11 @@ public final class JsonUtils {
             } catch (final JsonProcessingException e) {
                 throw new IllegalArgumentException(String.format("Unable to parse JSON %s", throughput), e);
             }
-            if(node.isValueNode()) {
-                return ThroughputProperties.createManualThroughput(((ValueNode)node).asInt());
+            if (node.isValueNode()) {
+                return ThroughputProperties.createManualThroughput(((ValueNode) node).asInt());
             }
-            if(node.isContainerNode() && ((ContainerNode<?>)node).has(AUTOPILOT_MAX_THROUGHPUT)) {
-                return ThroughputProperties.createAutoscaledThroughput(((ValueNode)node.get(AUTOPILOT_MAX_THROUGHPUT)).asInt());
+            if (node.isContainerNode() && ((ContainerNode<?>) node).has(AUTOPILOT_MAX_THROUGHPUT)) {
+                return ThroughputProperties.createAutoscaledThroughput(((ValueNode) node.get(AUTOPILOT_MAX_THROUGHPUT)).asInt());
             }
         }
         return null;

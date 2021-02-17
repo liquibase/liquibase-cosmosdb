@@ -24,6 +24,6 @@ import com.azure.cosmos.CosmosDatabase;
 
 public interface NoSqlQueryForLongStatement {
 
-   long queryForLong(CosmosDatabase cosmosDatabase) ;
+    long queryForLong(CosmosDatabase cosmosDatabase);
 
 }

@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptySqlQuerySpec;
 
-public class UpdateEachItemStatement extends CreateItemStatement{
+public class UpdateEachItemStatement extends CreateItemStatement {
 
     public static final String COMMAND_NAME = "updateEachItem";
 
@@ -48,7 +48,7 @@ public class UpdateEachItemStatement extends CreateItemStatement{
     }
 
     public UpdateEachItemStatement() {
-        this(null, (SqlQuerySpec)null, null);
+        this(null, (SqlQuerySpec) null, null);
     }
 
     @Override

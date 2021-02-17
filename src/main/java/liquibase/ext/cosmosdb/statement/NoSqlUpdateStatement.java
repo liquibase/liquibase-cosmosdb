@@ -24,6 +24,6 @@ import com.azure.cosmos.CosmosDatabase;
 
 public interface NoSqlUpdateStatement {
 
-   int update(CosmosDatabase cosmosDatabase);
+    int update(CosmosDatabase cosmosDatabase);
 
 }
