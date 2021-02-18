@@ -104,11 +104,11 @@ public final class JsonUtils {
         return destination;
     }
 
-    public static CosmosContainerProperties toContainerProperties(final String containerName, final String optionsJson) {
+    public static CosmosContainerProperties toContainerProperties(final String containerName, final String containerPropertiesJson) {
 
         final CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(containerName, DEFAULT_PARTITION_KEY_PATH);
-        if (isNotEmpty(trimToNull(optionsJson))) {
-            final DocumentCollection documentCollection = new DocumentCollection(optionsJson);
+        if (isNotEmpty(trimToNull(containerPropertiesJson))) {
+            final DocumentCollection documentCollection = new DocumentCollection(containerPropertiesJson);
             if (nonNull(documentCollection.getPartitionKey())) {
                 cosmosContainerProperties.setPartitionKeyDefinition(documentCollection.getPartitionKey());
             }
@@ -131,14 +131,14 @@ public final class JsonUtils {
         return cosmosContainerProperties;
     }
 
-    public static ThroughputProperties toThroughputProperties(final String throughput) {
+    public static ThroughputProperties toThroughputProperties(final String throughputPropertiesJson) {
 
-        if (nonNull(trimToNull(throughput))) {
+        if (nonNull(trimToNull(throughputPropertiesJson))) {
             final TreeNode node;
             try {
-                node = OBJECT_MAPPER.readTree(throughput);
+                node = OBJECT_MAPPER.readTree(throughputPropertiesJson);
             } catch (final JsonProcessingException e) {
-                throw new IllegalArgumentException(String.format("Unable to parse JSON %s", throughput), e);
+                throw new IllegalArgumentException(String.format("Unable to parse JSON %s", throughputPropertiesJson), e);
             }
             if (node.isValueNode()) {
                 return ThroughputProperties.createManualThroughput(((ValueNode) node).asInt());

@@ -40,7 +40,7 @@ import lombok.Setter;
 public class CreateContainerChange extends AbstractCosmosChange {
 
     private String containerId;
-    private String ContainerProperties;
+    private String containerProperties;
     private String throughputProperties;
     private Boolean skipExisting;
 
@@ -53,7 +53,7 @@ public class CreateContainerChange extends AbstractCosmosChange {
     public SqlStatement[] generateStatements(final Database database) {
 
         final CreateContainerStatement createContainerStatement =
-                new CreateContainerStatement(containerId, ContainerProperties, throughputProperties, skipExisting);
+                new CreateContainerStatement(containerId, containerProperties, throughputProperties, skipExisting);
 
         return new SqlStatement[]{
                 createContainerStatement
