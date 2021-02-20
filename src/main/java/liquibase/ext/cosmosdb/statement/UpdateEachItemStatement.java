@@ -21,9 +21,9 @@ package liquibase.ext.cosmosdb.statement;
  */
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.implementation.Document;
 import com.azure.cosmos.models.SqlQuerySpec;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 
 import java.util.List;
 import java.util.Map;
@@ -52,8 +52,13 @@ public class UpdateEachItemStatement extends CreateItemStatement {
     }
 
     @Override
-    public void execute(final CosmosDatabase cosmosDatabase) {
-        final CosmosContainer cosmosContainer = cosmosDatabase.getContainer(containerName);
+    public String getCommandName() {
+        return COMMAND_NAME;
+    }
+
+    @Override
+    public void execute(final CosmosLiquibaseDatabase database) {
+        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerName);
 
         final Document source = getDocument();
 
@@ -68,8 +73,4 @@ public class UpdateEachItemStatement extends CreateItemStatement {
         });
     }
 
-    @Override
-    public String getCommandName() {
-        return COMMAND_NAME;
-    }
 }

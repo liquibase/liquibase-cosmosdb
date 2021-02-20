@@ -21,21 +21,23 @@ package liquibase.ext.cosmosdb.statement;
  */
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.CosmosDatabase;
-import lombok.AllArgsConstructor;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.nosql.statement.NoSqlQueryForLongStatement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.Map;
 
-@AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class CountDocumentsInContainerStatement extends AbstractNoSqlStatement implements NoSqlQueryForLongStatement {
+public class CountDocumentsInContainerStatement extends AbstractCosmosContainerStatement
+        implements NoSqlQueryForLongStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "countDocumentsInContainer";
 
-    private final String containerName;
+    public CountDocumentsInContainerStatement(final String containerName) {
+        super(containerName);
+    }
 
     @Override
     public String getCommandName() {
@@ -43,23 +45,9 @@ public class CountDocumentsInContainerStatement extends AbstractNoSqlStatement i
     }
 
     @Override
-    public String toJs() {
-        return
-                "db." +
-                        getCommandName() +
-                        "(" +
-                        containerName +
-                        ");";
-    }
-
-    @Override
-    public long queryForLong(final CosmosDatabase cosmosDatabase) {
-        final CosmosContainer cosmosContainer = cosmosDatabase.getContainer(containerName);
+    public long queryForLong(final CosmosLiquibaseDatabase database) {
+        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(getContainerName());
         return cosmosContainer.readAllItems(JsonUtils.DEFAULT_PARTITION_KEY, Map.class).stream().count();
     }
 
-    @Override
-    public String toString() {
-        return this.toJs();
-    }
 }

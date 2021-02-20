@@ -41,7 +41,7 @@ class InsertOneStatementIT extends AbstractCosmosWithConnectionIntegrationTest {
 
         final CreateContainerStatement createContainerStatement
                 = new CreateContainerStatement(CONTAINER_NAME_PERSON, PARTITION_KEY_PATH_LAST_NAME);
-        createContainerStatement.execute(cosmosDatabase);
+        createContainerStatement.execute(database);
 
         final CosmosContainer cosmosContainer = cosmosDatabase.getContainer(CONTAINER_NAME_PERSON);
 
@@ -50,17 +50,17 @@ class InsertOneStatementIT extends AbstractCosmosWithConnectionIntegrationTest {
 
         final CreateItemStatement createItemStatementId1Partition1
                 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"1\", \"lastName\" : \"LastName1\", \"firstName\" : \"FirstName1\", \"age\" : \"99\"}");
-        createItemStatementId1Partition1.execute(cosmosDatabase);
+        createItemStatementId1Partition1.execute(database);
 
         final CreateItemStatement createItemStatementId1Partition2
                 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"1\", \"lastName\" : \"LastName2\", \"firstName\" : \"FirstName1\", \"age\" : \"99\"}");
-        createItemStatementId1Partition2.execute(cosmosDatabase);
+        createItemStatementId1Partition2.execute(database);
         final CreateItemStatement createItemStatementId2Partition2
                 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"2\", \"lastName\" : \"LastName2\", \"firstName\" : \"FirstName2\", \"age\" : \"99\"}");
-        createItemStatementId2Partition2.execute(cosmosDatabase);
+        createItemStatementId2Partition2.execute(database);
 
         final CreateItemStatement createItemStatementSameId1SamePartition1 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"1\", \"lastName\" : \"LastName1\", \"firstName\" : \"FirstName2\", \"age\" : \"10\"}");
-                assertThatExceptionOfType(ConflictException.class).isThrownBy(() -> createItemStatementSameId1SamePartition1.execute(cosmosDatabase));
+                assertThatExceptionOfType(ConflictException.class).isThrownBy(() -> createItemStatementSameId1SamePartition1.execute(database));
 
         CosmosItemResponse<Map> documentId1Partition1 = cosmosContainer.readItem("1", new PartitionKey("LastName1"), Map.class);
         assertThat(documentId1Partition1.getItem().get("firstName")).isEqualTo("FirstName1");

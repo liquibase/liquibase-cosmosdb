@@ -20,7 +20,7 @@ class CreateChangeLogLockContainerStatementIT extends AbstractCosmosWithConnecti
         CreateContainerStatement createContainerStatement
                 = new CreateChangeLogLockContainerStatement(CONTAINER_NAME_1);
 
-        createContainerStatement.execute(cosmosDatabase);
+        createContainerStatement.execute(database);
 
         CosmosContainer cosmosContainer = cosmosDatabase.getContainer(CONTAINER_NAME_1);
 
@@ -29,7 +29,7 @@ class CreateChangeLogLockContainerStatementIT extends AbstractCosmosWithConnecti
         //TODO: assert partition
         //assertThat(cosmosContainer.get???).isEqualTo(PARTITION_KEY_PATH_DEFAULT);
 
-        assertThatExceptionOfType(CosmosException.class).isThrownBy(() -> createContainerStatement.execute(cosmosDatabase));
+        assertThatExceptionOfType(CosmosException.class).isThrownBy(() -> createContainerStatement.execute(database));
 
     }
 }

@@ -20,21 +20,20 @@ package liquibase.ext.cosmosdb.changelog;
  * #L%
  */
 
-import liquibase.Liquibase;
 import liquibase.Scope;
 import liquibase.changelog.ChangeLogHistoryServiceFactory;
 import liquibase.database.core.H2Database;
 import liquibase.executor.ExecutorService;
 import liquibase.ext.cosmosdb.database.CosmosConnection;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
-import liquibase.ext.cosmosdb.executor.CosmosExecutor;
+import liquibase.nosql.executor.NoSqlExecutor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 
-import static liquibase.servicelocator.PrioritizedService.PRIORITY_DATABASE;
+import static liquibase.plugin.Plugin.PRIORITY_SPECIALIZED;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -42,7 +41,7 @@ class CosmosHistoryServiceTest {
 
     protected CosmosLiquibaseDatabase cosmosLiquibaseDatabase;
     protected CosmosHistoryService cosmosHistoryService;
-    protected CosmosExecutor cosmosExecutor;
+    protected NoSqlExecutor cosmosExecutor;
     protected CosmosConnection cosmosConnection;
 
     @BeforeEach
@@ -51,14 +50,14 @@ class CosmosHistoryServiceTest {
         cosmosLiquibaseDatabase = new CosmosLiquibaseDatabase();
         cosmosLiquibaseDatabase.setConnection(cosmosConnection);
         cosmosHistoryService = (CosmosHistoryService) ChangeLogHistoryServiceFactory.getInstance().getChangeLogService(cosmosLiquibaseDatabase);
-        cosmosExecutor = (CosmosExecutor) Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor(CosmosExecutor.COSMOS_EXECUTOR_NAME, cosmosLiquibaseDatabase);
+        cosmosExecutor = (NoSqlExecutor) Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor(NoSqlExecutor.EXECUTOR_NAME, cosmosLiquibaseDatabase);
         cosmosHistoryService.reset();
         cosmosHistoryService.resetDeploymentId();
     }
 
     @Test
     void testGetPriority() {
-        assertThat(cosmosHistoryService.getPriority()).isEqualTo(PRIORITY_DATABASE);
+        assertThat(cosmosHistoryService.getPriority()).isEqualTo(PRIORITY_SPECIALIZED);
     }
 
     @Test

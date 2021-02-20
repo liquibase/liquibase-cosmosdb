@@ -20,9 +20,9 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.models.CosmosContainerProperties;
 import com.azure.cosmos.models.ThroughputProperties;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -49,19 +49,15 @@ public class ReplaceContainerStatement extends CreateContainerStatement {
     }
 
     @Override
-    public void execute(final CosmosDatabase cosmosDatabase) {
+    public void execute(final CosmosLiquibaseDatabase database) {
         if (nonNull(trimToNull(getContainerProperties()))) {
             final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerName(), getContainerProperties());
-            cosmosDatabase.getContainer(getContainerName()).replace(cosmosContainerProperties);
+            database.getCosmosDatabase().getContainer(getContainerName()).replace(cosmosContainerProperties);
         }
         if (nonNull(trimToNull(getThroughputProperties()))) {
             final ThroughputProperties cosmosContainerProperties = toThroughputProperties(getThroughputProperties());
-            cosmosDatabase.getContainer(getContainerName()).replaceThroughput(cosmosContainerProperties);
+            database.getCosmosDatabase().getContainer(getContainerName()).replaceThroughput(cosmosContainerProperties);
         }
     }
 
-    @Override
-    public String toString() {
-        return toJs();
-    }
 }

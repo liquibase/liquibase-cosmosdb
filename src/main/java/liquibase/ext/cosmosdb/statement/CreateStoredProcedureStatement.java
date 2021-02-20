@@ -20,9 +20,10 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.CosmosScripts;
 import com.azure.cosmos.models.CosmosStoredProcedureProperties;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.nosql.statement.NoSqlExecuteStatement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -32,12 +33,17 @@ import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptyStoredProcedureP
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class CreateStoredProcedureStatement extends AbstractNoSqlContainerStatement implements NoSqlExecuteStatement {
+public class CreateStoredProcedureStatement extends AbstractCosmosContainerStatement
+        implements NoSqlExecuteStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "createStoredProcedure";
 
     private final CosmosStoredProcedureProperties procedureProperties;
     private final Boolean replaceExisting;
+
+    public CreateStoredProcedureStatement() {
+        this(null, (String) null, null);
+    }
 
     public CreateStoredProcedureStatement(String containerName, String procedurePropertiesJson, Boolean replaceExisting) {
         this(containerName, orEmptyStoredProcedureProperties(procedurePropertiesJson), replaceExisting);
@@ -47,10 +53,6 @@ public class CreateStoredProcedureStatement extends AbstractNoSqlContainerStatem
         super(containerName);
         this.procedureProperties = procedureProperties;
         this.replaceExisting = ofNullable(replaceExisting).orElse(FALSE);
-    }
-
-    public CreateStoredProcedureStatement() {
-        this(null, (String) null, null);
     }
 
     @Override
@@ -69,20 +71,18 @@ public class CreateStoredProcedureStatement extends AbstractNoSqlContainerStatem
     }
 
     @Override
-    public void execute(final CosmosDatabase cosmosDatabase) {
+    public void execute(final CosmosLiquibaseDatabase database) {
 
-        final CosmosScripts cosmosScripts = cosmosDatabase.getContainer(getContainerName()).getScripts();
+        final CosmosScripts cosmosScripts = database.getCosmosDatabase()
+                .getContainer(getContainerName()).getScripts();
 
         if (replaceExisting) {
             //TODO: Not working, not clear why
-            cosmosScripts.getStoredProcedure(procedureProperties.getId()).replace(procedureProperties);
+            cosmosScripts.getStoredProcedure(procedureProperties.getId())
+                    .replace(procedureProperties);
         } else {
             cosmosScripts.createStoredProcedure(procedureProperties);
         }
     }
 
-    @Override
-    public String toString() {
-        return toJs();
-    }
 }

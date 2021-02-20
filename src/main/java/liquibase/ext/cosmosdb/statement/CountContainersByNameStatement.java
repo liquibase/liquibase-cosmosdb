@@ -20,19 +20,21 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
-import lombok.AllArgsConstructor;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.nosql.statement.NoSqlQueryForLongStatement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class CountContainersByNameStatement extends AbstractNoSqlStatement implements NoSqlQueryForLongStatement {
+public class CountContainersByNameStatement extends AbstractCosmosContainerStatement
+        implements NoSqlQueryForLongStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "countContainersByName";
 
-    private final String containerName;
+    public CountContainersByNameStatement(final String containerName) {
+        super(containerName);
+    }
 
     @Override
     public String getCommandName() {
@@ -40,22 +42,8 @@ public class CountContainersByNameStatement extends AbstractNoSqlStatement imple
     }
 
     @Override
-    public String toJs() {
-        return
-                "db." +
-                        getCommandName() +
-                        "(" +
-                        containerName +
-                        ");";
+    public long queryForLong(final CosmosLiquibaseDatabase database) {
+        return database.getCosmosDatabase().readAllContainers().stream().filter(c -> c.getId().equals(getContainerName())).count();
     }
 
-    @Override
-    public long queryForLong(final CosmosDatabase cosmosDatabase) {
-        return cosmosDatabase.readAllContainers().stream().filter(c -> c.getId().equals(containerName)).count();
-    }
-
-    @Override
-    public String toString() {
-        return toJs();
-    }
 }

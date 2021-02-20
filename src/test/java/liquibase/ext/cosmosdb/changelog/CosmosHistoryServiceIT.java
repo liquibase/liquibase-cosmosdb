@@ -27,8 +27,8 @@ import liquibase.changelog.RanChangeSet;
 import liquibase.database.core.H2Database;
 import liquibase.executor.ExecutorService;
 import liquibase.ext.cosmosdb.AbstractCosmosWithConnectionIntegrationTest;
-import liquibase.ext.cosmosdb.executor.CosmosExecutor;
 import liquibase.ext.cosmosdb.statement.CountContainersByNameStatement;
+import liquibase.nosql.executor.NoSqlExecutor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static liquibase.plugin.Plugin.PRIORITY_SPECIALIZED;
 import static liquibase.servicelocator.PrioritizedService.PRIORITY_DATABASE;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -45,39 +46,17 @@ class CosmosHistoryServiceIT extends AbstractCosmosWithConnectionIntegrationTest
 
     public CosmosHistoryService cosmosHistoryService;
     private CountContainersByNameStatement countContainersByNameStatement;
-    protected CosmosExecutor cosmosExecutor;
+    protected NoSqlExecutor cosmosExecutor;
 
 
     @BeforeEach
     protected void setUpEach() {
         super.setUpEach();
-        cosmosHistoryService = (CosmosHistoryService) ChangeLogHistoryServiceFactory.getInstance().getChangeLogService(cosmosLiquibaseDatabase);
-        cosmosExecutor = (CosmosExecutor) Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor(CosmosExecutor.COSMOS_EXECUTOR_NAME, cosmosLiquibaseDatabase);
+        cosmosHistoryService = (CosmosHistoryService) ChangeLogHistoryServiceFactory.getInstance().getChangeLogService(database);
+        cosmosExecutor = (NoSqlExecutor) Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor(NoSqlExecutor.EXECUTOR_NAME, database);
         cosmosHistoryService.reset();
         cosmosHistoryService.resetDeploymentId();
-        countContainersByNameStatement = new CountContainersByNameStatement(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName());
-    }
-
-    @Test
-    void testGetPriority() {
-        assertThat(cosmosHistoryService.getPriority()).isEqualTo(PRIORITY_DATABASE);
-    }
-
-    @Test
-    void testSupports() {
-        assertThat(cosmosHistoryService.supports(cosmosLiquibaseDatabase)).isTrue();
-        assertThat(cosmosHistoryService.supports(new H2Database())).isFalse();
-
-    }
-
-    @Test
-    void testGetDatabaseChangeLogTableName() {
-        assertThat(cosmosHistoryService.getDatabaseChangeLogTableName()).isEqualTo(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName());
-    }
-
-    @Test
-    void testCanCreateChangeLogTable() {
-        assertThat(cosmosHistoryService.canCreateChangeLogTable()).isTrue();
+        countContainersByNameStatement = new CountContainersByNameStatement(database.getDatabaseChangeLogTableName());
     }
 
     @SneakyThrows
@@ -87,13 +66,13 @@ class CosmosHistoryServiceIT extends AbstractCosmosWithConnectionIntegrationTest
         assertThat(cosmosHistoryService.isServiceInitialized()).isFalse();
         assertThat(cosmosHistoryService.getHasDatabaseChangeLogTable()).isNull();
         assertThat(cosmosHistoryService.getExecutor()).isEqualTo(cosmosExecutor);
-        assertThat(countContainersByNameStatement.queryForLong(cosmosDatabase)).isEqualTo(0L);
+        assertThat(countContainersByNameStatement.queryForLong(database)).isEqualTo(0L);
         cosmosHistoryService.init();
         assertThat(cosmosHistoryService.getRanChangeSetList()).isNull();
         assertThat(cosmosHistoryService.isServiceInitialized()).isTrue();
         assertThat(cosmosHistoryService.getHasDatabaseChangeLogTable()).isTrue();
         assertThat(cosmosHistoryService.getExecutor()).isEqualTo(cosmosExecutor);
-        assertThat(countContainersByNameStatement.queryForLong(cosmosDatabase)).isEqualTo(1L);
+        assertThat(countContainersByNameStatement.queryForLong(database)).isEqualTo(1L);
     }
 
     @SneakyThrows
@@ -106,7 +85,7 @@ class CosmosHistoryServiceIT extends AbstractCosmosWithConnectionIntegrationTest
         assertThat(cosmosHistoryService.isServiceInitialized()).isFalse();
         assertThat(cosmosHistoryService.getHasDatabaseChangeLogTable()).isNull();
         assertThat(cosmosHistoryService.getExecutor()).isEqualTo(cosmosExecutor);
-        assertThat(countContainersByNameStatement.queryForLong(cosmosDatabase)).isEqualTo(1L);
+        assertThat(countContainersByNameStatement.queryForLong(database)).isEqualTo(1L);
     }
 
     @Test
@@ -213,7 +192,7 @@ class CosmosHistoryServiceIT extends AbstractCosmosWithConnectionIntegrationTest
         assertThat(cosmosHistoryService.isServiceInitialized()).isFalse();
         assertThat(cosmosHistoryService.getHasDatabaseChangeLogTable()).isNull();
         assertThat(cosmosHistoryService.getExecutor()).isEqualTo(cosmosExecutor);
-        assertThat(countContainersByNameStatement.queryForLong(cosmosDatabase)).isEqualTo(0L);
+        assertThat(countContainersByNameStatement.queryForLong(database)).isEqualTo(0L);
         
     }
 }

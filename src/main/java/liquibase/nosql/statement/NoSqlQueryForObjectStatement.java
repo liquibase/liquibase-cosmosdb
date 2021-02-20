@@ -1,4 +1,4 @@
-package liquibase.ext.cosmosdb.statement;
+package liquibase.nosql.statement;
 
 /*-
  * #%L
@@ -20,10 +20,10 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
+import liquibase.nosql.database.AbstractNoSqlDatabase;
 
-public interface NoSqlUpdateStatement {
+public interface NoSqlQueryForObjectStatement<D extends AbstractNoSqlDatabase> {
 
-    int update(CosmosDatabase cosmosDatabase);
+   <T> T queryForObject(D database, Class<T> requiredType);
 
 }

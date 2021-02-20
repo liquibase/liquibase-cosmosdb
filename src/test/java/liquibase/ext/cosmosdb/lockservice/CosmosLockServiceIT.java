@@ -25,10 +25,10 @@ import liquibase.database.core.PostgresDatabase;
 import liquibase.executor.ExecutorService;
 import liquibase.ext.cosmosdb.AbstractCosmosWithConnectionIntegrationTest;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
-import liquibase.ext.cosmosdb.executor.CosmosExecutor;
 import liquibase.ext.cosmosdb.statement.CountContainersByNameStatement;
 import liquibase.lockservice.DatabaseChangeLogLock;
 import liquibase.lockservice.LockServiceFactory;
+import liquibase.nosql.executor.NoSqlExecutor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,34 +42,15 @@ class CosmosLockServiceIT extends AbstractCosmosWithConnectionIntegrationTest {
 
     public CosmosLockService cosmosLockService;
     private CountContainersByNameStatement countContainersByNameStatement;
-    protected CosmosExecutor cosmosExecutor;
+    protected NoSqlExecutor cosmosExecutor;
 
     @BeforeEach
     protected void setUpEach() {
         super.setUpEach();
-        cosmosLockService = (CosmosLockService) LockServiceFactory.getInstance().getLockService(cosmosLiquibaseDatabase);
-        cosmosExecutor = (CosmosExecutor) Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor(CosmosExecutor.COSMOS_EXECUTOR_NAME, cosmosLiquibaseDatabase);
+        cosmosLockService = (CosmosLockService) LockServiceFactory.getInstance().getLockService(database);
+        cosmosExecutor = (NoSqlExecutor) Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor(NoSqlExecutor.EXECUTOR_NAME, database);
         cosmosLockService.reset();
-        countContainersByNameStatement = new CountContainersByNameStatement(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName());
-    }
-
-    @Test
-    void testSupports() {
-        assertThat(cosmosLockService.supports(cosmosLiquibaseDatabase)).isTrue();
-        assertThat(cosmosLockService.supports(new PostgresDatabase())).isFalse();
-        assertThat(cosmosLockService.getPriority()).isEqualTo(PRIORITY_DATABASE);
-    }
-
-    @Test
-    void testGetDatabase() {
-        assertThat(cosmosLockService).isInstanceOf(CosmosLockService.class);
-        assertThat(cosmosLockService.getDatabase()).isInstanceOf(CosmosLiquibaseDatabase.class);
-        assertThat(cosmosLockService.getDatabase()).isEqualTo(cosmosLiquibaseDatabase);
-    }
-
-    @Test
-    void testGetDatabaseChangeLogLockTableName() {
-        assertThat(cosmosLockService.getDatabaseChangeLogLockTableName()).isEqualTo(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName());
+        countContainersByNameStatement = new CountContainersByNameStatement(database.getDatabaseChangeLogLockTableName());
     }
 
     @SneakyThrows
@@ -82,7 +63,7 @@ class CosmosLockServiceIT extends AbstractCosmosWithConnectionIntegrationTest {
         assertThat(cosmosLockService.getExecutor()).isEqualTo(cosmosExecutor);
         assertThat(cosmosLockService.hasChangeLogLock()).isFalse();
         assertThat(cosmosLockService.getHasDatabaseChangeLogLockTable()).isTrue();
-        assertThat(countContainersByNameStatement.queryForLong(cosmosDatabase)).isEqualTo(1L);
+        assertThat(countContainersByNameStatement.queryForLong(database)).isEqualTo(1L);
     }
 
     @SneakyThrows
@@ -249,13 +230,13 @@ class CosmosLockServiceIT extends AbstractCosmosWithConnectionIntegrationTest {
         assertThat(cosmosLockService.getExecutor()).isEqualTo(cosmosExecutor);
         assertThat(cosmosLockService.hasChangeLogLock()).isFalse();
         assertThat(cosmosLockService.getHasDatabaseChangeLogLockTable()).isTrue();
-        assertThat(countContainersByNameStatement.queryForLong(cosmosDatabase)).isEqualTo(1L);
+        assertThat(countContainersByNameStatement.queryForLong(database)).isEqualTo(1L);
         // Destroy
         cosmosLockService.destroy();
         assertThat(cosmosLockService.getExecutor()).isEqualTo(cosmosExecutor);
         assertThat(cosmosLockService.hasChangeLogLock()).isFalse();
         assertThat(cosmosLockService.getHasDatabaseChangeLogLockTable()).isNull();
-        assertThat(countContainersByNameStatement.queryForLong(cosmosDatabase)).isEqualTo(0L);
+        assertThat(countContainersByNameStatement.queryForLong(database)).isEqualTo(0L);
 
     }
 }

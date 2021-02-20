@@ -1,6 +1,7 @@
 package liquibase.ext.cosmosdb.database;
 
 import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -1001,11 +1002,20 @@ class CosmosLiquibaseDatabaseTest {
     @SneakyThrows
     @Test
     void isCorrectDatabaseImplementation() {
-        final CosmosConnection cosmosConnection = new CosmosConnection();
-        final CosmosLiquibaseDatabase cosmosLiquibaseDatabase =
-                (CosmosLiquibaseDatabase) DatabaseFactory.getInstance().findCorrectDatabaseImplementation(cosmosConnection);
-        assertThat(cosmosLiquibaseDatabase).isNotNull();
-        assertThat(cosmosLiquibaseDatabase.getConnection()).isEqualTo(cosmosConnection);
+        CosmosLiquibaseDatabase database = new CosmosLiquibaseDatabase();
+        assertThat(database.isCorrectDatabaseImplementation(null)).isFalse();
+        assertThat(database.isCorrectDatabaseImplementation(new JdbcConnection())).isFalse();
+        assertThat(database.isCorrectDatabaseImplementation(new CosmosConnection())).isTrue();
+    }
+
+    @SneakyThrows
+    @Test
+    void findCorrectDatabaseImplementation() {
+        final CosmosConnection connection = new CosmosConnection();
+        final CosmosLiquibaseDatabase database =
+                (CosmosLiquibaseDatabase) DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
+        assertThat(database).isNotNull();
+        assertThat(database.getConnection()).isEqualTo(connection);
     }
 
     @Test

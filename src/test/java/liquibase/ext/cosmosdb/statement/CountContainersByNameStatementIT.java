@@ -18,7 +18,7 @@ class CountContainersByNameStatementIT extends AbstractCosmosWithConnectionInteg
         final CountContainersByNameStatement countContainersByNameStatement
                 = new CountContainersByNameStatement(CONTAINER_NAME_1);
 
-        final Long countBeforeCreated = countContainersByNameStatement.queryForLong(cosmosDatabase);
+        final Long countBeforeCreated = countContainersByNameStatement.queryForLong(database);
         assertThat(countBeforeCreated).isEqualTo(0L);
 
         final CreateContainerStatement createContainerStatement1
@@ -27,10 +27,10 @@ class CountContainersByNameStatementIT extends AbstractCosmosWithConnectionInteg
         final CreateContainerStatement createContainerStatement2
                 = new CreateContainerStatement(CONTAINER_NAME_2);
 
-        createContainerStatement1.execute(cosmosDatabase);
-        createContainerStatement2.execute(cosmosDatabase);
+        createContainerStatement1.execute(database);
+        createContainerStatement2.execute(database);
 
-        final Long countAfterCreated = countContainersByNameStatement.queryForLong(cosmosDatabase);
+        final Long countAfterCreated = countContainersByNameStatement.queryForLong(database);
         assertThat(countAfterCreated).isEqualTo(1L);
 
     }

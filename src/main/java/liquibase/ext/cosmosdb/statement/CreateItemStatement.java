@@ -21,8 +21,9 @@ package liquibase.ext.cosmosdb.statement;
  */
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.implementation.Document;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.nosql.statement.NoSqlExecuteStatement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -30,11 +31,16 @@ import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptyDocument;
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class CreateItemStatement extends AbstractNoSqlContainerStatement implements NoSqlExecuteStatement {
+public class CreateItemStatement extends AbstractCosmosContainerStatement
+        implements NoSqlExecuteStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "createItem";
 
     private final Document document;
+
+    public CreateItemStatement() {
+        this(null, (String) null);
+    }
 
     public CreateItemStatement(final String containerName, final String jsonDocument) {
         this(containerName, orEmptyDocument(jsonDocument));
@@ -43,11 +49,6 @@ public class CreateItemStatement extends AbstractNoSqlContainerStatement impleme
     public CreateItemStatement(final String containerName, final Document document) {
         super(containerName);
         this.document = document;
-    }
-
-    public CreateItemStatement() {
-        super(null);
-        this.document = null;
     }
 
     @Override
@@ -68,9 +69,9 @@ public class CreateItemStatement extends AbstractNoSqlContainerStatement impleme
     }
 
     @Override
-    public void execute(final CosmosDatabase cosmosDatabase) {
+    public void execute(final CosmosLiquibaseDatabase database) {
 
-        final CosmosContainer cosmosContainer = cosmosDatabase.getContainer(containerName);
+        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerName);
         cosmosContainer.createItem(document);
     }
 

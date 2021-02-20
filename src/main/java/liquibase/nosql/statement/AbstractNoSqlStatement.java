@@ -1,8 +1,8 @@
-package liquibase.ext.cosmosdb.statement;
+package liquibase.nosql.statement;
 
 /*-
  * #%L
- * Liquibase CosmosDB Extension
+ * Liquibase NoSql Extension
  * %%
  * Copyright (C) 2020 Mastercard
  * %%
@@ -20,28 +20,27 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import liquibase.statement.AbstractSqlStatement;
 
-@AllArgsConstructor
-public abstract class AbstractNoSqlContainerStatement extends AbstractNoSqlStatement {
+public abstract class AbstractNoSqlStatement extends AbstractSqlStatement {
 
-    public static final Integer ITEM_ID_1 = 1;
-    public static final String ITEM_ID_1_STRING = "1";
+    public abstract String getCommandName();
 
-    @Getter
-    protected final String containerName;
-
-    public AbstractNoSqlContainerStatement() {
-        this(null);
+    @Override
+    public boolean continueOnError() {
+        return false;
     }
 
     @Override
-    public String toJs() {
-        return "db." +
-                getCommandName() +
-                "(" +
-                containerName +
-                ");";
+    public boolean skipOnUnsupported() {
+        return false;
     }
+
+    public abstract String toJs();
+
+    @Override
+    public String toString() {
+        return toJs();
+    }
+
 }

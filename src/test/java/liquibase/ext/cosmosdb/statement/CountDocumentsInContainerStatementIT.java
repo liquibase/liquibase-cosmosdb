@@ -38,25 +38,25 @@ class CountDocumentsInContainerStatementIT extends AbstractCosmosWithConnectionI
     void testQueryForLong() {
 
         final CountDocumentsInContainerStatement countDocumentsInContainerStatement = new CountDocumentsInContainerStatement(CONTAINER_NAME_PERSON);
-        assertThatExceptionOfType(CosmosException.class).isThrownBy(() -> countDocumentsInContainerStatement.queryForLong(cosmosDatabase));
+        assertThatExceptionOfType(CosmosException.class).isThrownBy(() -> countDocumentsInContainerStatement.queryForLong(database));
 
         final CreateContainerStatement createContainerStatement
                 = new CreateContainerStatement(CONTAINER_NAME_PERSON, "{ \"partitionKey\": { \"paths\": [\"/partition\"] } }");
-        createContainerStatement.execute(cosmosDatabase);
-        assertThat(countDocumentsInContainerStatement.queryForLong(cosmosDatabase)).isEqualTo(0L);
+        createContainerStatement.execute(database);
+        assertThat(countDocumentsInContainerStatement.queryForLong(database)).isEqualTo(0L);
 
         final CosmosContainer cosmosContainer = cosmosDatabase.getContainer(CONTAINER_NAME_PERSON);
 
         final CreateItemStatement createItemStatementId1NoPartition
                 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"1\", \"partition\" : \"LastName1\", \"firstName\" : \"FirstName1\", \"age\" : \"99\"}");
-        createItemStatementId1NoPartition.execute(cosmosDatabase);
+        createItemStatementId1NoPartition.execute(database);
 
         final CreateItemStatement createItemStatementId1PartitionDefault
                 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"1\", \"partition\" : \"default\", \"firstName\" : \"FirstName1\", \"age\" : \"99\"}");
-        createItemStatementId1PartitionDefault.execute(cosmosDatabase);
+        createItemStatementId1PartitionDefault.execute(database);
         final CreateItemStatement createItemStatementId2PartitionDefault
                 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"2\", \"partition\" : \"default\", \"firstName\" : \"FirstName2\", \"age\" : \"99\"}");
-        createItemStatementId2PartitionDefault.execute(cosmosDatabase);
-        assertThat(countDocumentsInContainerStatement.queryForLong(cosmosDatabase)).isEqualTo(2L);
+        createItemStatementId2PartitionDefault.execute(database);
+        assertThat(countDocumentsInContainerStatement.queryForLong(database)).isEqualTo(2L);
     }
 }

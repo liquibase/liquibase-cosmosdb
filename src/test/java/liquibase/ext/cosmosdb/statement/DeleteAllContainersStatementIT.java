@@ -21,8 +21,8 @@ class DeleteAllContainersStatementIT extends AbstractCosmosWithConnectionIntegra
         final CreateContainerStatement createContainerStatement2
                 = new CreateContainerStatement(CONTAINER_NAME_2);
 
-        createContainerStatement1.execute(cosmosDatabase);
-        createContainerStatement2.execute(cosmosDatabase);
+        createContainerStatement1.execute(database);
+        createContainerStatement2.execute(database);
 
         final Long countAfterCreated = cosmosDatabase.readAllContainers().stream().count();
         assertThat(countAfterCreated).isEqualTo(2L);
@@ -30,7 +30,7 @@ class DeleteAllContainersStatementIT extends AbstractCosmosWithConnectionIntegra
         final DeleteAllContainersStatement deleteAllContainersStatement
                 = new DeleteAllContainersStatement();
 
-        deleteAllContainersStatement.execute(cosmosDatabase);
+        deleteAllContainersStatement.execute(database);
 
         final Long countAfterDeleted = cosmosDatabase.readAllContainers().stream().count();
         assertThat(countAfterDeleted).isEqualTo(0L);

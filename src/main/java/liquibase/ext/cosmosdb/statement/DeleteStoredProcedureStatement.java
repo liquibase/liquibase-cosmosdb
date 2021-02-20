@@ -20,9 +20,10 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.CosmosScripts;
 import com.azure.cosmos.models.CosmosStoredProcedureProperties;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.nosql.statement.NoSqlExecuteStatement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -32,7 +33,8 @@ import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptyStoredProcedureP
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class DeleteStoredProcedureStatement extends AbstractNoSqlContainerStatement implements NoSqlExecuteStatement {
+public class DeleteStoredProcedureStatement extends AbstractCosmosContainerStatement
+        implements NoSqlExecuteStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "deleteStoredProcedure";
 
@@ -69,9 +71,9 @@ public class DeleteStoredProcedureStatement extends AbstractNoSqlContainerStatem
     }
 
     @Override
-    public void execute(final CosmosDatabase cosmosDatabase) {
+    public void execute(final CosmosLiquibaseDatabase database) {
 
-        final CosmosScripts cosmosScripts = cosmosDatabase.getContainer(getContainerName()).getScripts();
+        final CosmosScripts cosmosScripts = database.getCosmosDatabase().getContainer(getContainerName()).getScripts();
 
         if (skipMissing) {
             if (cosmosScripts.readAllStoredProcedures()
@@ -83,8 +85,4 @@ public class DeleteStoredProcedureStatement extends AbstractNoSqlContainerStatem
         cosmosScripts.getStoredProcedure(procedureProperties.getId()).delete();
     }
 
-    @Override
-    public String toString() {
-        return toJs();
-    }
 }

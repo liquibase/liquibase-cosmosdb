@@ -20,9 +20,9 @@ package liquibase.ext.cosmosdb.lockservice;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
-import liquibase.ext.cosmosdb.statement.AbstractNoSqlContainerStatement;
-import liquibase.ext.cosmosdb.statement.NoSqlQueryForListStatement;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.ext.cosmosdb.statement.AbstractCosmosContainerStatement;
+import liquibase.nosql.statement.NoSqlQueryForListStatement;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,7 +31,8 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
-public class SelectChangeLogLocksStatement extends AbstractNoSqlContainerStatement implements NoSqlQueryForListStatement {
+public class SelectChangeLogLocksStatement extends AbstractCosmosContainerStatement
+        implements NoSqlQueryForListStatement<CosmosLiquibaseDatabase, CosmosChangeLogLock> {
 
     public static final String COMMAND_NAME = "selectLocks";
 
@@ -44,14 +45,15 @@ public class SelectChangeLogLocksStatement extends AbstractNoSqlContainerStateme
         return COMMAND_NAME;
     }
 
-    public List<CosmosChangeLogLock> readAll(final CosmosDatabase cosmosDatabase) {
-        final ChangeLogLockRepository repository = new ChangeLogLockRepository(cosmosDatabase, getContainerName());
-        return repository.getAll().stream().filter(CosmosChangeLogLock::getLocked).collect(Collectors.toList());
+    public List<CosmosChangeLogLock> readAll(final CosmosLiquibaseDatabase database) {
+        final ChangeLogLockRepository repository =
+                new ChangeLogLockRepository(database.getCosmosDatabase(), getContainerName());
+        return repository.getAll().stream().filter(CosmosChangeLogLock::getLocked)
+                .collect(Collectors.toList());
     }
 
     @Override
-    @SuppressWarnings({"unchecked"})
-    public <T> List<T> queryForList(final CosmosDatabase cosmosDatabase) {
-        return (List<T>) readAll(cosmosDatabase);
+    public List<CosmosChangeLogLock> queryForList(final CosmosLiquibaseDatabase database) {
+        return readAll(database);
     }
 }

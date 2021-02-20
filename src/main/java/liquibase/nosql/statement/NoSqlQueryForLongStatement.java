@@ -1,8 +1,8 @@
-package liquibase.ext.cosmosdb.statement;
+package liquibase.nosql.statement;
 
 /*-
  * #%L
- * Liquibase CosmosDB Extension
+ * Liquibase NoSql Extension
  * %%
  * Copyright (C) 2020 Mastercard
  * %%
@@ -20,10 +20,10 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
+import liquibase.nosql.database.AbstractNoSqlDatabase;
 
-public interface NoSqlExecuteStatement {
+public interface NoSqlQueryForLongStatement <D extends AbstractNoSqlDatabase>{
 
-    void execute(CosmosDatabase cosmosDatabase);
+   long queryForLong(D database) ;
 
 }

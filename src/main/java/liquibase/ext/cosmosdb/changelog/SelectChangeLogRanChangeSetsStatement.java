@@ -22,8 +22,9 @@ package liquibase.ext.cosmosdb.changelog;
 
 import com.azure.cosmos.CosmosDatabase;
 import liquibase.changelog.RanChangeSet;
-import liquibase.ext.cosmosdb.statement.AbstractNoSqlContainerStatement;
-import liquibase.ext.cosmosdb.statement.NoSqlQueryForListStatement;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.ext.cosmosdb.statement.AbstractCosmosContainerStatement;
+import liquibase.nosql.statement.NoSqlQueryForListStatement;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,7 +34,8 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
-public class SelectChangeLogRanChangeSetsStatement extends AbstractNoSqlContainerStatement implements NoSqlQueryForListStatement {
+public class SelectChangeLogRanChangeSetsStatement extends AbstractCosmosContainerStatement
+        implements NoSqlQueryForListStatement<CosmosLiquibaseDatabase, CosmosRanChangeSet> {
 
     public static final String COMMAND_NAME = "selectRanChangeSets";
 
@@ -46,15 +48,14 @@ public class SelectChangeLogRanChangeSetsStatement extends AbstractNoSqlContaine
         return COMMAND_NAME;
     }
 
-    public List<CosmosRanChangeSet> readAll(final CosmosDatabase cosmosDatabase) {
-        final ChangeSetRepository repository = new ChangeSetRepository(cosmosDatabase, getContainerName());
+    public List<CosmosRanChangeSet> readAll(final CosmosLiquibaseDatabase database) {
+        final ChangeSetRepository repository = new ChangeSetRepository(database.getCosmosDatabase(), getContainerName());
         return repository.getAll().stream()
                 .sorted(Comparator.comparing(RanChangeSet::getDateExecuted)).collect(Collectors.toList());
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> List<T> queryForList(final CosmosDatabase cosmosDatabase) {
-        return (List<T>) readAll(cosmosDatabase);
+    public List<CosmosRanChangeSet> queryForList(final CosmosLiquibaseDatabase database) {
+        return readAll(database);
     }
 }

@@ -26,24 +26,29 @@ import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.models.CosmosContainerProperties;
 import liquibase.Scope;
 import liquibase.changelog.ChangeLogHistoryServiceFactory;
+import liquibase.database.DatabaseFactory;
 import liquibase.executor.ExecutorService;
 import liquibase.ext.cosmosdb.database.CosmosConnection;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 import liquibase.lockservice.LockServiceFactory;
+import liquibase.nosql.executor.NoSqlExecutor;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+
+import static liquibase.ext.cosmosdb.TestUtils.DB_CONNECTION_URI_PROPERTY;
+import static liquibase.nosql.executor.NoSqlExecutor.EXECUTOR_NAME;
 
 /**
  * With {@link CosmosLiquibaseDatabase} initiated
  */
 public abstract class AbstractCosmosWithConnectionIntegrationTest extends AbstractCosmosIntegrationTest {
 
-    protected CosmosLiquibaseDatabase cosmosLiquibaseDatabase;
+    protected CosmosLiquibaseDatabase database;
+    protected NoSqlExecutor executor;
     protected CosmosConnection cosmosConnection;
     protected CosmosDatabase cosmosDatabase;
-
 
     @BeforeAll
     protected void setUp() {
@@ -55,11 +60,13 @@ public abstract class AbstractCosmosWithConnectionIntegrationTest extends Abstra
     @SneakyThrows
     protected void setUpEach() {
         resetServices();
-        cosmosConnection = new CosmosConnection();
-        cosmosConnection.open(connectionString, driver, driverProperties);
-        cosmosLiquibaseDatabase = new CosmosLiquibaseDatabase();
-        cosmosLiquibaseDatabase.setConnection(cosmosConnection);
+
+        connectionString = testProperties.getProperty(DB_CONNECTION_URI_PROPERTY);
+        database = (CosmosLiquibaseDatabase) DatabaseFactory.getInstance().openDatabase(connectionString, null, null, null , null);
+        cosmosConnection = (CosmosConnection) database.getConnection();
         cosmosDatabase = cosmosConnection.getCosmosDatabase();
+        executor = (NoSqlExecutor) Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor(EXECUTOR_NAME, database);
+
         deleteContainers();
     }
 

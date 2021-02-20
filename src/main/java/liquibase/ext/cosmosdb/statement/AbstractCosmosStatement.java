@@ -20,9 +20,9 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
-import liquibase.statement.AbstractSqlStatement;
+import liquibase.nosql.statement.AbstractNoSqlStatement;
 
-public abstract class AbstractNoSqlStatement extends AbstractSqlStatement {
+public abstract class AbstractCosmosStatement extends AbstractNoSqlStatement {
 
     public abstract String getCommandName();
 
@@ -32,15 +32,10 @@ public abstract class AbstractNoSqlStatement extends AbstractSqlStatement {
     }
 
     @Override
-    public boolean skipOnUnsupported() {
-        return false;
-    }
-
-    public abstract String toJs();
-
-    @Override
-    public String toString() {
-        return toJs();
+    public String toJs() {
+        return getCommandName() +
+                "(" +
+                ");";
     }
 
 }

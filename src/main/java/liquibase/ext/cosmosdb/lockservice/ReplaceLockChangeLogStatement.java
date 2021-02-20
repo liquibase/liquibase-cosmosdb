@@ -20,10 +20,10 @@ package liquibase.ext.cosmosdb.lockservice;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
 import liquibase.exception.UnexpectedLiquibaseException;
-import liquibase.ext.cosmosdb.statement.AbstractNoSqlContainerStatement;
-import liquibase.ext.cosmosdb.statement.NoSqlUpdateStatement;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.ext.cosmosdb.statement.AbstractCosmosContainerStatement;
+import liquibase.nosql.statement.NoSqlUpdateStatement;
 import liquibase.util.NetUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +33,8 @@ import java.util.Optional;
 
 @Getter
 @Setter
-public class ReplaceLockChangeLogStatement extends AbstractNoSqlContainerStatement implements NoSqlUpdateStatement {
+public class ReplaceLockChangeLogStatement extends AbstractCosmosContainerStatement
+        implements NoSqlUpdateStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "replaceLock";
 
@@ -60,10 +61,6 @@ public class ReplaceLockChangeLogStatement extends AbstractNoSqlContainerStateme
         this.locked = locked;
     }
 
-    public ReplaceLockChangeLogStatement() {
-        this(null, false);
-    }
-
     @Override
     public String getCommandName() {
         return COMMAND_NAME;
@@ -79,8 +76,8 @@ public class ReplaceLockChangeLogStatement extends AbstractNoSqlContainerStateme
                 ");";
     }
 
-    protected int replace(final CosmosDatabase cosmosDatabase) {
-        final ChangeLogLockRepository repository = new ChangeLogLockRepository(cosmosDatabase, getContainerName());
+    protected int replace(final CosmosLiquibaseDatabase database) {
+        final ChangeLogLockRepository repository = new ChangeLogLockRepository(database.getCosmosDatabase(), getContainerName());
 
         final CosmosChangeLogLock lockEntry = new CosmosChangeLogLock(ITEM_ID_1, new Date()
                 , HOST_NAME + HOST_DESCRIPTION + " (" + HOST_ADDRESS + ")", locked);
@@ -89,8 +86,8 @@ public class ReplaceLockChangeLogStatement extends AbstractNoSqlContainerStateme
     }
 
     @Override
-    public int update(final CosmosDatabase cosmosDatabase) {
-       return replace(cosmosDatabase);
+    public int update(final CosmosLiquibaseDatabase database) {
+       return replace(database);
 
     }
 }

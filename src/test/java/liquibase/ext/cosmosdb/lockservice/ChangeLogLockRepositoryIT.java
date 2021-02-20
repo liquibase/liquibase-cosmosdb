@@ -20,7 +20,7 @@ class ChangeLogLockRepositoryIT extends AbstractCosmosWithConnectionIntegrationT
     @BeforeEach
     protected void setUpEach() {
         super.setUpEach();
-        new CreateChangeLogLockContainerStatement(CONTAINER_NAME_1).execute(cosmosDatabase);
+        new CreateChangeLogLockContainerStatement(CONTAINER_NAME_1).execute(database);
         repository = new ChangeLogLockRepository(cosmosDatabase, CONTAINER_NAME_1);
         container = repository.getContainer();
     }

@@ -21,9 +21,8 @@ package liquibase.ext.cosmosdb.database;
  */
 
 import com.azure.cosmos.CosmosDatabase;
-import liquibase.database.Database;
-import liquibase.database.DatabaseConnection;
 import liquibase.exception.DatabaseException;
+import liquibase.nosql.database.AbstractNoSqlConnection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -41,40 +40,19 @@ import static liquibase.ext.cosmosdb.database.CosmosConnectionString.fromConnect
 @Getter
 @Setter
 @NoArgsConstructor()
-public class CosmosConnection implements DatabaseConnection {
+public class CosmosConnection extends AbstractNoSqlConnection {
 
     public static final String LIQUIBASE_EXTENSION_USER_AGENT_SUFFIX = "LiquibaseExtension";
 
     private CosmosConnectionString cosmosConnectionString;
+
     private CosmosClientProxy cosmosClient;
 
     private CosmosDatabase cosmosDatabase;
 
     @Override
-    public int getPriority() {
-        return PRIORITY_DEFAULT + 500;
-    }
-
-    @Override
-    public boolean getAutoCommit() throws DatabaseException {
-        //TODO: implement if applicable
-        return false;
-    }
-
-    @Override
-    public void setAutoCommit(boolean autoCommit) throws DatabaseException {
-        //TODO: implementation
-    }
-
-    @Override
     public String getCatalog() throws DatabaseException {
         return this.cosmosConnectionString.getDatabaseName().orElse("");
-    }
-
-    @Override
-    public String nativeSQL(String sql) throws DatabaseException {
-        //TODO: implement if applicable
-        return null;
     }
 
     @Override
@@ -109,7 +87,8 @@ public class CosmosConnection implements DatabaseConnection {
 
     @Override
     public String getConnectionUserName() {
-        return null;
+        return ofNullable(this.cosmosConnectionString)
+                .flatMap(CosmosConnectionString::getAccountEndpoint).orElse("");
     }
 
     @Override
@@ -117,12 +96,24 @@ public class CosmosConnection implements DatabaseConnection {
         return isNull(this.cosmosClient) || isNull(this.cosmosDatabase);
     }
 
+    /**
+     * Opens a CosmosConnection based
+     * Creates a new client with the given connection string.
+     * Creates a database if not exists with the DatabaseName passed via {@link CosmosConnectionString#fromJsonConnectionString(String)}
+     *
+     * <p>Note: Intended for driver and library authors to associate extra driver metadata with the connections.</p>
+     *
+     * @param url              connectionString the json format connection string
+     * @param driverObject     driverObject identified
+     * @param driverProperties driverProperties passed through
+     * @see CosmosConnectionString
+     */
     @Override
-    public void attached(Database database) {
-        //TODO: implementation
+    public void open(final String url, final Driver driverObject, final Properties driverProperties) throws DatabaseException {
+        open(fromConnectionString(url), driverObject, driverProperties);
     }
 
-    public void open(final CosmosConnectionString cosmosConnectionString, Driver driverObject, Properties driverProperties) throws DatabaseException {
+    public void open(final CosmosConnectionString cosmosConnectionString, final Driver driverObject, final Properties driverProperties) throws DatabaseException {
 
         this.cosmosConnectionString = cosmosConnectionString;
 
@@ -145,22 +136,6 @@ public class CosmosConnection implements DatabaseConnection {
         }
     }
 
-    /**
-     * Opens a CosmosConnection based
-     * Creates a new client with the given connection string.
-     * Creates a database if not exists with the DatabaseName passed via {@link CosmosConnectionString#fromJsonConnectionString(String)}
-     *
-     * <p>Note: Intended for driver and library authors to associate extra driver metadata with the connections.</p>
-     *
-     * @param url              connectionString the json format connection string
-     * @param driverObject     driverObject identified
-     * @param driverProperties driverProperties passed through
-     * @see CosmosConnectionString
-     */
-    public void open(String url, Driver driverObject, Properties driverProperties) throws DatabaseException {
-        open(fromConnectionString(url), driverObject, driverProperties);
-    }
-
     @Override
     public void close() throws DatabaseException {
         try {
@@ -177,16 +152,6 @@ public class CosmosConnection implements DatabaseConnection {
         this.cosmosClient = null;
         this.cosmosDatabase = null;
         this.cosmosConnectionString = null;
-    }
-
-    @Override
-    public void commit() throws DatabaseException {
-        //TODO: implementation
-    }
-
-    @Override
-    public void rollback() throws DatabaseException {
-        //TODO: implementation
     }
 
 }

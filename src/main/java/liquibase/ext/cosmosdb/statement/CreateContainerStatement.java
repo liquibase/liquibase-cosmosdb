@@ -20,13 +20,13 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.models.CosmosContainerProperties;
 import com.azure.cosmos.models.ThroughputProperties;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.nosql.statement.NoSqlExecuteStatement;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import static java.lang.Boolean.FALSE;
 import static java.util.Optional.ofNullable;
@@ -34,17 +34,17 @@ import static liquibase.ext.cosmosdb.statement.JsonUtils.toContainerProperties;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.toThroughputProperties;
 
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class CreateContainerStatement extends AbstractNoSqlStatement implements NoSqlExecuteStatement {
+public class CreateContainerStatement extends AbstractCosmosStatement
+        implements NoSqlExecuteStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "createContainer";
 
-    private String containerName;
-    private String containerProperties;
-    private String throughputProperties;
-    private Boolean skipExisting;
+    private final String containerName;
+    private final String containerProperties;
+    private final String throughputProperties;
+    private final Boolean skipExisting;
 
     public CreateContainerStatement(final String containerName, final String containerProperties, final String throughputProperties) {
         this(containerName, containerProperties, throughputProperties, FALSE);
@@ -56,6 +56,10 @@ public class CreateContainerStatement extends AbstractNoSqlStatement implements 
 
     public CreateContainerStatement(final String containerName) {
         this(containerName, null);
+    }
+
+    public CreateContainerStatement() {
+        this(null);
     }
 
     @Override
@@ -80,13 +84,13 @@ public class CreateContainerStatement extends AbstractNoSqlStatement implements 
     }
 
     @Override
-    public void execute(final CosmosDatabase cosmosDatabase) {
+    public void execute(final CosmosLiquibaseDatabase database) {
         final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerName(), getContainerProperties());
         final ThroughputProperties cosmosThroughputProperties = toThroughputProperties(getThroughputProperties());
         if (ofNullable(skipExisting).orElse(FALSE)) {
-            cosmosDatabase.createContainerIfNotExists(cosmosContainerProperties, cosmosThroughputProperties);
+            database.getCosmosDatabase().createContainerIfNotExists(cosmosContainerProperties, cosmosThroughputProperties);
         } else {
-            cosmosDatabase.createContainer(cosmosContainerProperties, cosmosThroughputProperties);
+            database.getCosmosDatabase().createContainer(cosmosContainerProperties, cosmosThroughputProperties);
         }
     }
 

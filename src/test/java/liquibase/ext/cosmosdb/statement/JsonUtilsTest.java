@@ -183,10 +183,11 @@ class JsonUtilsTest {
         assertThat(destination.get("LastName")).isEqualTo("AndersenFromSource");
         assertThat(destination.getList("Parents", Map.class, false)).hasSize(1);
         assertThat(destination.getList("Children", Map.class, false)).hasSize(1);
-        assertThat(destination.getObject("Address", Map.class))
+        assertThat((Map<String, Object>)destination.getObject("Address", Map.class))
                 .hasFieldOrPropertyWithValue("State", "WAFromSource")
                 .hasFieldOrPropertyWithValue("County", "KingFromSource")
-                .hasNoNullFieldsOrPropertiesExcept("City");
+                .containsKey("City")
+                .hasFieldOrPropertyWithValue("City", null);
         assertThat(destination.get("DestinationOnly")).isEqualTo(true);
         assertThat(destination.get("SourceOnly")).isEqualTo(true);
 
@@ -198,7 +199,8 @@ class JsonUtilsTest {
         assertThat((Map<String, Object>) source.getObject("Address", Map.class))
                 .hasFieldOrPropertyWithValue("State", "WAFromSource")
                 .hasFieldOrPropertyWithValue("County", "KingFromSource")
-                .containsKey("City").hasFieldOrPropertyWithValue("City", null);
+                .containsKey("City")
+                .hasFieldOrPropertyWithValue("City", null);
         assertThat(source.get("DestinationOnly")).isNull();
         assertThat(source.get("SourceOnly")).isEqualTo(true);
     }

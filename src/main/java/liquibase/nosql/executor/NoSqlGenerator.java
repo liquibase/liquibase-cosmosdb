@@ -1,8 +1,8 @@
-package liquibase.ext.cosmosdb.executor;
+package liquibase.nosql.executor;
 
 /*-
  * #%L
- * Liquibase CosmosDB Extension
+ * Liquibase NoSql Extension
  * %%
  * Copyright (C) 2020 Mastercard
  * %%
@@ -22,7 +22,7 @@ package liquibase.ext.cosmosdb.executor;
 
 import liquibase.database.Database;
 import liquibase.exception.ValidationErrors;
-import liquibase.ext.cosmosdb.statement.AbstractNoSqlStatement;
+import liquibase.nosql.statement.AbstractNoSqlStatement;
 import liquibase.sql.Sql;
 import liquibase.sqlgenerator.SqlGeneratorChain;
 import liquibase.sqlgenerator.core.AbstractSqlGenerator;
@@ -36,7 +36,8 @@ public class NoSqlGenerator extends AbstractSqlGenerator<AbstractNoSqlStatement>
     }
 
     @Override
-    public Sql[] generateSql(AbstractNoSqlStatement statement, Database database, SqlGeneratorChain<AbstractNoSqlStatement> sqlGeneratorChain) {
+    public Sql[] generateSql(AbstractNoSqlStatement statement, Database database,
+                             SqlGeneratorChain<AbstractNoSqlStatement> sqlGeneratorChain) {
         return new Sql[0];
     }
 

@@ -21,13 +21,15 @@ package liquibase.ext.cosmosdb.statement;
  */
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.models.CosmosContainerProperties;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.nosql.statement.NoSqlExecuteStatement;
 
 import java.util.Collections;
 import java.util.List;
 
-public class DeleteAllContainersStatement extends AbstractNoSqlStatement implements NoSqlExecuteStatement {
+public class DeleteAllContainersStatement extends AbstractCosmosStatement
+        implements NoSqlExecuteStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "deleteAllContainers";
 
@@ -57,14 +59,10 @@ public class DeleteAllContainersStatement extends AbstractNoSqlStatement impleme
     }
 
     @Override
-    public void execute(final CosmosDatabase cosmosDatabase) {
-        cosmosDatabase.readAllContainers().stream()
+    public void execute(final CosmosLiquibaseDatabase database) {
+        database.getCosmosDatabase().readAllContainers().stream()
                 .map(CosmosContainerProperties::getId).filter(id -> !ignoreContainerNames.contains(id))
-                .map(cosmosDatabase::getContainer).forEach(CosmosContainer::delete);
+                .map((id) -> database.getCosmosDatabase().getContainer(id)).forEach(CosmosContainer::delete);
     }
 
-    @Override
-    public String toString() {
-        return this.toJs();
-    }
 }

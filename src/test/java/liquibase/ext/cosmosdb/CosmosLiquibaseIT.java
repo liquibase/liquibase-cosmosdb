@@ -45,13 +45,13 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
     @Test
     @SuppressWarnings("unchecked")
     void testUpdate() {
-        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.generic.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.generic.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName()).read()).isNotNull();
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogLockTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName()).read()).isNotNull();
         assertThat(cosmosDatabase.readAllContainers().stream().count()).isEqualTo(3);
 
-        final List<Map<String, Object>> ranChangeSets = cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName()).queryItems(QUERY_SELECT_ALL, null, Map.class)
+        final List<Map<String, Object>> ranChangeSets = cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName()).queryItems(QUERY_SELECT_ALL, null, Map.class)
                 .stream().map(i -> (Map<String, Object>) i).collect(Collectors.toList());
         assertThat(ranChangeSets).hasSize(2);
         assertThat(ranChangeSets.get(0))
@@ -63,10 +63,10 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
     @SneakyThrows
     @Test
     void testUpdateCreateContainer() {
-        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.create-container.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.create-container.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName()).read()).isNotNull();
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogLockTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName()).read()).isNotNull();
 
         List<CosmosContainerProperties> containerProperties = cosmosDatabase.readAllContainers().stream().collect(Collectors.toList());
 
@@ -85,10 +85,10 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
     @SneakyThrows
     @Test
     void testUpdateReplaceContainer() {
-        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.replace-container.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.replace-container.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName()).read()).isNotNull();
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogLockTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName()).read()).isNotNull();
 
         assertThat(cosmosDatabase.getContainer("minimal").read()).isNotNull();
         assertThat(cosmosDatabase.getContainer("minimal").read().getProperties()).isNotNull();
@@ -111,10 +111,10 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
     @SneakyThrows
     @Test
     void testUpdateCreateProcedure() {
-        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.create-procedure.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.create-procedure.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName()).read()).isNotNull();
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogLockTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName()).read()).isNotNull();
 
         final CosmosContainer container = cosmosDatabase.getContainer("procedureContainer1");
         assertThat(container).isNotNull();
@@ -143,11 +143,11 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
 
         assertThat(cosmosDatabase.readAllContainers().stream().count()).isEqualTo(0L);
 
-        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.delete-container.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.delete-container.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName()).read()).isNotNull();
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName()).read()).isNotNull();
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName())
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogLockTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName()).read()).isNotNull();
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName())
                 .queryItems(QUERY_SELECT_ALL, null, Map.class)
                 .stream().count()).isEqualTo(2L);
 
@@ -162,23 +162,23 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
     void testUpdateIncremental() {
 
         // First increment
-        Liquibase liquibase = new Liquibase("liquibase/ext/changelog.incremental-1.main.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        Liquibase liquibase = new Liquibase("liquibase/ext/changelog.incremental-1.main.xml", new ClassLoaderResourceAccessor(), database);
 
         assertThat(cosmosDatabase.readAllContainers().stream()
-                .filter(c -> c.getId().equals(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName())).findFirst())
+                .filter(c -> c.getId().equals(database.getDatabaseChangeLogTableName())).findFirst())
                 .isNotPresent();
         assertThat(cosmosDatabase.readAllContainers().stream()
-                .filter(c -> c.getId().equals(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName())).findFirst())
+                .filter(c -> c.getId().equals(database.getDatabaseChangeLogLockTableName())).findFirst())
                 .isNotPresent();
 
         liquibase.update("");
 
         assertThat(cosmosDatabase.readAllContainers().stream()
-                .filter(c -> c.getId().equals(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName())).findFirst())
+                .filter(c -> c.getId().equals(database.getDatabaseChangeLogTableName())).findFirst())
                 .isPresent();
 
         assertThat(cosmosDatabase.readAllContainers().stream()
-                .filter(c -> c.getId().equals(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName())).findFirst())
+                .filter(c -> c.getId().equals(database.getDatabaseChangeLogLockTableName())).findFirst())
                 .isPresent();
 
         assertThat(cosmosDatabase.readAllContainers().stream()
@@ -192,23 +192,23 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
         assertThat(cosmosDatabase.readAllContainers().stream().count()).isEqualTo(3);
 
         // Second increment
-        liquibase = new Liquibase("liquibase/ext/changelog.incremental-2.main.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        liquibase = new Liquibase("liquibase/ext/changelog.incremental-2.main.xml", new ClassLoaderResourceAccessor(), database);
 
         assertThat(cosmosDatabase.readAllContainers().stream()
-                .filter(c -> c.getId().equals(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName())).findFirst())
+                .filter(c -> c.getId().equals(database.getDatabaseChangeLogTableName())).findFirst())
                 .isPresent();
         assertThat(cosmosDatabase.readAllContainers().stream()
-                .filter(c -> c.getId().equals(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName())).findFirst())
+                .filter(c -> c.getId().equals(database.getDatabaseChangeLogLockTableName())).findFirst())
                 .isPresent();
 
         liquibase.update("");
 
         assertThat(cosmosDatabase.readAllContainers().stream()
-                .filter(c -> c.getId().equals(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName())).findFirst())
+                .filter(c -> c.getId().equals(database.getDatabaseChangeLogTableName())).findFirst())
                 .isPresent();
 
         assertThat(cosmosDatabase.readAllContainers().stream()
-                .filter(c -> c.getId().equals(cosmosLiquibaseDatabase.getDatabaseChangeLogLockTableName())).findFirst())
+                .filter(c -> c.getId().equals(database.getDatabaseChangeLogLockTableName())).findFirst())
                 .isPresent();
 
         assertThat(cosmosDatabase.readAllContainers().stream()
@@ -227,7 +227,7 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
     @SneakyThrows
     @Test
     void testUpdateCreateItem() {
-        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.create-item.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.create-item.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
 
         Map<?, ?> document = cosmosDatabase.getContainer("container1").queryItems(QUERY_SELECT_ALL, null, Map.class)
@@ -250,11 +250,11 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
     @SneakyThrows
     @Test
     void testUpdateUpsertItem() {
-        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.upsert-item.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.upsert-item.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
 
         // createContainer, createItem, upsertItem = 3 rows in log
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName())
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName())
                 .queryItems(QUERY_SELECT_ALL, null, Map.class).stream().count()).isEqualTo(3L);
 
         Map<?, ?> document = cosmosDatabase.getContainer("container1").queryItems(QUERY_SELECT_ALL, null, Map.class)
@@ -273,11 +273,11 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
     @Test
     @SuppressWarnings("unchecked")
     void testUpdateUpdateEachItem() {
-        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.update-each-item.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.update-each-item.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
 
         // createContainer, createItem, upsertItem = 3 rows in log
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName())
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName())
                 .queryItems(QUERY_SELECT_ALL, null, Map.class).stream().count()).isEqualTo(4L);
 
         Map<String, ?> document = cosmosDatabase.getContainer("container1").queryItems(QUERY_SELECT_ALL, null, Map.class)
@@ -324,11 +324,11 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
     @Test
     @SuppressWarnings("unchecked")
     void testUpdateDeleteEachItem() {
-        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.delete-each-item.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.delete-each-item.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
 
         // createContainer, createItem, upsertItem = 3 rows in log
-        assertThat(cosmosDatabase.getContainer(cosmosLiquibaseDatabase.getDatabaseChangeLogTableName())
+        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName())
                 .queryItems(QUERY_SELECT_ALL, null, Map.class).stream().count()).isEqualTo(3L);
 
         List<Map<String, ?>> documents = cosmosDatabase.getContainer("deleteEachContainer1").queryItems(QUERY_SELECT_ALL, null, Map.class)
@@ -354,7 +354,7 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
     @SneakyThrows
     @Test
     void testDropAll() {
-        Liquibase liquibase = new Liquibase("liquibase/ext/changelog.generic.test.xml", new ClassLoaderResourceAccessor(), cosmosLiquibaseDatabase);
+        Liquibase liquibase = new Liquibase("liquibase/ext/changelog.generic.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.dropAll();
         assertThat(cosmosDatabase.readAllContainers().stream().count()).isEqualTo(0);
 

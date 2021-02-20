@@ -20,9 +20,9 @@ package liquibase.ext.cosmosdb.lockservice;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
-import liquibase.ext.cosmosdb.statement.AbstractNoSqlContainerStatement;
-import liquibase.ext.cosmosdb.statement.NoSqlQueryForObjectStatement;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.ext.cosmosdb.statement.AbstractCosmosContainerStatement;
+import liquibase.nosql.statement.NoSqlQueryForObjectStatement;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,7 +30,8 @@ import java.util.Optional;
 
 @Getter
 @Setter
-public class SelectChangeLogLockStatement extends AbstractNoSqlContainerStatement implements NoSqlQueryForObjectStatement {
+public class SelectChangeLogLockStatement extends AbstractCosmosContainerStatement
+        implements NoSqlQueryForObjectStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "readLock";
 
@@ -43,14 +44,15 @@ public class SelectChangeLogLockStatement extends AbstractNoSqlContainerStatemen
         return COMMAND_NAME;
     }
 
-    public Optional<CosmosChangeLogLock> read(final CosmosDatabase cosmosDatabase) {
-        final ChangeLogLockRepository repository = new ChangeLogLockRepository(cosmosDatabase, getContainerName());
+    public Optional<CosmosChangeLogLock> read(final CosmosLiquibaseDatabase database) {
+        final ChangeLogLockRepository repository =
+                new ChangeLogLockRepository(database.getCosmosDatabase(), getContainerName());
         return repository.get(ITEM_ID_1_STRING);
     }
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public <T> T queryForObject(final CosmosDatabase cosmosDatabase, final Class<T> requiredType) {
-        return (T) read(cosmosDatabase).orElse(null);
+    public <T> T queryForObject(final CosmosLiquibaseDatabase database, final Class<T> requiredType) {
+        return (T) read(database).orElse(null);
     }
 }

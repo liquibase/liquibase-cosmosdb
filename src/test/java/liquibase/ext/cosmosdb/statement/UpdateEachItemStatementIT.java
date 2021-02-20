@@ -16,15 +16,15 @@ class UpdateEachItemStatementIT extends AbstractCosmosWithConnectionIntegrationT
 
         final CreateContainerStatement createContainerStatement
                 = new CreateContainerStatement(CONTAINER_NAME_PERSON, PARTITION_KEY_PATH_LAST_NAME);
-        createContainerStatement.execute(cosmosDatabase);
+        createContainerStatement.execute(database);
 
         CreateItemStatement createItemStatementId1Partition1
                 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"1\", \"lastName\" : \"LastNameRemained1\", \"firstName\" : \"FirstNameShouldBeChanged1\"}");
-        createItemStatementId1Partition1.execute(cosmosDatabase);
+        createItemStatementId1Partition1.execute(database);
 
         createItemStatementId1Partition1
                 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"2\", \"lastName\" : \"LastNameRemained2\", \"firstName\" : \"FirstNameShouldRemain2\"}");
-        createItemStatementId1Partition1.execute(cosmosDatabase);
+        createItemStatementId1Partition1.execute(database);
 
         Optional<Map<String, Object>> actual = cosmosDatabase.getContainer(CONTAINER_NAME_PERSON).queryItems("SELECT * FROM " + CONTAINER_NAME_PERSON + " f WHERE f.id = \"1\"", null, Map.class)
                 .stream().map(i -> (Map<String, Object>) i).findFirst();
@@ -47,7 +47,7 @@ class UpdateEachItemStatementIT extends AbstractCosmosWithConnectionIntegrationT
                 "}  ";
 
         final UpdateEachItemStatement updateEachItemStatement = new UpdateEachItemStatement(CONTAINER_NAME_PERSON, jsonQuery, "{\"id\" : \"1\", \"firstName\" : \"FirstNameUpdated\", \"age\" : \"100\"}");
-        updateEachItemStatement.execute(cosmosDatabase);
+        updateEachItemStatement.execute(database);
 
         actual = cosmosDatabase.getContainer(CONTAINER_NAME_PERSON).queryItems("SELECT * FROM " + CONTAINER_NAME_PERSON + " f WHERE f.id = \"1\"", null, Map.class)
                 .stream().map(i -> (Map<String, Object>) i).findFirst();

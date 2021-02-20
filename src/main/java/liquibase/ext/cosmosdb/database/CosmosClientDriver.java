@@ -5,6 +5,7 @@ import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosClientBuilder;
 import liquibase.Scope;
 import liquibase.exception.DatabaseException;
+import liquibase.util.StringUtil;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -13,6 +14,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import static liquibase.ext.cosmosdb.database.CosmosConnection.LIQUIBASE_EXTENSION_USER_AGENT_SUFFIX;
+import static liquibase.ext.cosmosdb.database.CosmosConnectionString.COSMOSDB_PREFIX;
 
 public class CosmosClientDriver implements Driver {
 
@@ -40,7 +42,8 @@ public class CosmosClientDriver implements Driver {
 
     @Override
     public boolean acceptsURL(final String url) {
-        return false;
+        final String trimmedUrl = StringUtil.trimToEmpty(url);
+        return trimmedUrl.startsWith(COSMOSDB_PREFIX);
     }
 
     @Override

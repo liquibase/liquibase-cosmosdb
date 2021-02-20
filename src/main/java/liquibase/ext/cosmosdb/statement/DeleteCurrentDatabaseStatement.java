@@ -20,7 +20,8 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.nosql.statement.NoSqlExecuteStatement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +29,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class DeleteCurrentDatabaseStatement extends AbstractNoSqlStatement implements NoSqlExecuteStatement {
+public class DeleteCurrentDatabaseStatement extends AbstractCosmosStatement
+        implements NoSqlExecuteStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "delete";
 
@@ -47,12 +49,8 @@ public class DeleteCurrentDatabaseStatement extends AbstractNoSqlStatement imple
     }
 
     @Override
-    public void execute(final CosmosDatabase cosmosDatabase) {
-        cosmosDatabase.delete();
+    public void execute(final CosmosLiquibaseDatabase database) {
+        database.getCosmosDatabase().delete();
     }
 
-    @Override
-    public String toString() {
-        return this.toJs();
-    }
 }

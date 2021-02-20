@@ -1,1 +1,1 @@
-liquibase.ext.cosmosdb.executor.NoSqlGenerator
+liquibase.nosql.executor.NoSqlGenerator

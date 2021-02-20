@@ -21,8 +21,9 @@ package liquibase.ext.cosmosdb.statement;
  */
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.models.CosmosContainerProperties;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.nosql.statement.NoSqlExecuteStatement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -31,7 +32,8 @@ import static java.lang.Boolean.TRUE;
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public class DeleteContainerStatement extends AbstractNoSqlContainerStatement implements NoSqlExecuteStatement {
+public class DeleteContainerStatement extends AbstractCosmosContainerStatement
+        implements NoSqlExecuteStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "delete";
 
@@ -68,18 +70,14 @@ public class DeleteContainerStatement extends AbstractNoSqlContainerStatement im
     }
 
     @Override
-    public void execute(final CosmosDatabase cosmosDatabase) {
-        if (TRUE.equals(skipMissing) && cosmosDatabase.readAllContainers()
+    public void execute(final CosmosLiquibaseDatabase database) {
+        if (TRUE.equals(skipMissing) && database.getCosmosDatabase().readAllContainers()
                 .stream().map(CosmosContainerProperties::getId).noneMatch(c -> c.equals(containerName))) {
             return;
         }
 
-        final CosmosContainer cosmosContainer = cosmosDatabase.getContainer(containerName);
+        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerName);
         cosmosContainer.delete();
     }
 
-    @Override
-    public String toString() {
-        return this.toJs();
-    }
 }

@@ -1,12 +1,12 @@
 package liquibase.ext.cosmosdb.changelog;
 
-import com.azure.cosmos.CosmosDatabase;
 import liquibase.change.Change;
 import liquibase.change.core.TagDatabaseChange;
 import liquibase.changelog.ChangeSet;
 import liquibase.exception.UnexpectedLiquibaseException;
-import liquibase.ext.cosmosdb.statement.AbstractNoSqlContainerStatement;
-import liquibase.ext.cosmosdb.statement.NoSqlExecuteStatement;
+import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
+import liquibase.ext.cosmosdb.statement.AbstractCosmosContainerStatement;
+import liquibase.nosql.statement.NoSqlExecuteStatement;
 import liquibase.util.LiquibaseUtil;
 import liquibase.util.StringUtil;
 import lombok.Getter;
@@ -14,7 +14,8 @@ import lombok.Getter;
 import java.util.Date;
 import java.util.UUID;
 
-public class MarkChangeSetRanStatement extends AbstractNoSqlContainerStatement implements NoSqlExecuteStatement {
+public class MarkChangeSetRanStatement extends AbstractCosmosContainerStatement
+        implements NoSqlExecuteStatement<CosmosLiquibaseDatabase> {
 
     public static final String COMMAND_NAME = "markChangeSet";
 
@@ -63,9 +64,9 @@ public class MarkChangeSetRanStatement extends AbstractNoSqlContainerStatement i
     }
 
     @Override
-    public void execute(final CosmosDatabase cosmosDatabase) {
+    public void execute(final CosmosLiquibaseDatabase database) {
         try {
-            final ChangeSetRepository repository = new ChangeSetRepository(cosmosDatabase, containerName);
+            final ChangeSetRepository repository = new ChangeSetRepository(database.getCosmosDatabase(), containerName);
 
             if (execType.equals(ChangeSet.ExecType.FAILED) || execType.equals(ChangeSet.ExecType.SKIPPED)) {
                 return; //don't mark

@@ -1,4 +1,4 @@
-package liquibase.ext.cosmosdb.executor;
+package liquibase.nosql.executor;
 
 /*-
  * #%L
@@ -20,52 +20,63 @@ package liquibase.ext.cosmosdb.executor;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
 import liquibase.Scope;
+import liquibase.changelog.ChangeLogHistoryServiceFactory;
 import liquibase.database.Database;
 import liquibase.exception.DatabaseException;
 import liquibase.executor.AbstractExecutor;
-import liquibase.ext.cosmosdb.database.CosmosConnection;
-import liquibase.ext.cosmosdb.statement.*;
 import liquibase.logging.Logger;
+import liquibase.nosql.changelog.AbstractNoSqlHistoryService;
+import liquibase.nosql.database.AbstractNoSqlConnection;
+import liquibase.nosql.database.AbstractNoSqlDatabase;
+import liquibase.nosql.statement.NoSqlExecuteStatement;
+import liquibase.nosql.statement.NoSqlQueryForListStatement;
+import liquibase.nosql.statement.NoSqlQueryForLongStatement;
+import liquibase.nosql.statement.NoSqlQueryForObjectStatement;
+import liquibase.nosql.statement.NoSqlUpdateStatement;
 import liquibase.servicelocator.LiquibaseService;
 import liquibase.sql.visitor.SqlVisitor;
 import liquibase.statement.SqlStatement;
-import lombok.Getter;
+import liquibase.statement.core.UpdateStatement;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
-import static liquibase.servicelocator.PrioritizedService.PRIORITY_DATABASE;
+import static java.util.Optional.ofNullable;
 
 @LiquibaseService
-@NoArgsConstructor()
-public class CosmosExecutor extends AbstractExecutor {
+@NoArgsConstructor
+public class NoSqlExecutor extends AbstractExecutor {
 
-    public static final String COSMOS_EXECUTOR_NAME = "jdbc";
+    public static final String EXECUTOR_NAME = "jdbc";
     private final Logger log = Scope.getCurrentScope().getLog(getClass());
 
-    @Getter
-    @Setter
-    public CosmosDatabase cosmosDatabase;
-
     @Override
-    public void setDatabase(Database database) {
+    public void setDatabase(final Database database) {
         super.setDatabase(database);
-        cosmosDatabase = ((CosmosConnection) this.database.getConnection()).getCosmosDatabase();
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends AbstractNoSqlDatabase> T getDatabase() {
+        return (T) database;
     }
 
     @Override
     public String getName() {
-        return COSMOS_EXECUTOR_NAME;
+        return EXECUTOR_NAME;
     }
 
     @Override
     public int getPriority() {
-        return PRIORITY_DATABASE;
+        return PRIORITY_SPECIALIZED;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <C extends AbstractNoSqlConnection> C getConnection() {
+        return (C) ofNullable(database)
+                .map(Database::getConnection).orElse(null);
     }
 
     @Override
@@ -77,7 +88,8 @@ public class CosmosExecutor extends AbstractExecutor {
     public <T> T queryForObject(final SqlStatement sql, final Class<T> requiredType, final List<SqlVisitor> sqlVisitors) throws DatabaseException {
         if (sql instanceof NoSqlQueryForObjectStatement) {
             try {
-                return ((NoSqlQueryForObjectStatement) sql).queryForObject(cosmosDatabase, requiredType);
+                return ((NoSqlQueryForObjectStatement<?>) sql)
+                        .queryForObject(getDatabase(), requiredType);
             } catch (final Exception e) {
                 throw new DatabaseException("Could not query for object", e);
             }
@@ -94,7 +106,7 @@ public class CosmosExecutor extends AbstractExecutor {
     public long queryForLong(final SqlStatement sql, final List<SqlVisitor> sqlVisitors) throws DatabaseException {
         if (sql instanceof NoSqlQueryForLongStatement) {
             try {
-                return ((NoSqlQueryForLongStatement) sql).queryForLong(cosmosDatabase);
+                return ((NoSqlQueryForLongStatement<? extends AbstractNoSqlDatabase>) sql).queryForLong(getDatabase());
             } catch (final Exception e) {
                 throw new DatabaseException("Could not query for long", e);
             }
@@ -118,10 +130,11 @@ public class CosmosExecutor extends AbstractExecutor {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Object> queryForList(final SqlStatement sql, final Class elementType, final List<SqlVisitor> sqlVisitors) throws DatabaseException {
         if (sql instanceof NoSqlQueryForListStatement) {
             try {
-                return ((NoSqlQueryForListStatement) sql).queryForList(cosmosDatabase);
+                return ((NoSqlQueryForListStatement<? extends AbstractNoSqlDatabase, Object>) sql).queryForList(getDatabase());
             } catch (final Exception e) {
                 throw new DatabaseException("Could not query for list", e);
             }
@@ -139,6 +152,27 @@ public class CosmosExecutor extends AbstractExecutor {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * TODO: Raise with Liquibase why is this used instead of
+     * {@link AbstractNoSqlHistoryService#clearAllCheckSums()}
+     * in {@link liquibase.Liquibase#clearCheckSums()}
+     * @param updateStatement the {@link UpdateStatement} statement with MD5SUM=null
+     * @throws DatabaseException in case of a failure
+     */
+    public void execute(final UpdateStatement updateStatement) throws DatabaseException {
+        if(updateStatement.getNewColumnValues().containsKey("MD5SUM")
+                && updateStatement.getNewColumnValues().get("MD5SUM") == null) {
+            try {
+                ChangeLogHistoryServiceFactory.getInstance()
+                        .getChangeLogService(getDatabase()).clearAllCheckSums();
+            } catch (final Exception e) {
+                throw new DatabaseException("Could not execute", e);
+            }
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
     @Override
     public void execute(final SqlStatement sql) throws DatabaseException {
         this.execute(sql, emptyList());
@@ -148,10 +182,12 @@ public class CosmosExecutor extends AbstractExecutor {
     public void execute(final SqlStatement sql, final List<SqlVisitor> sqlVisitors) throws DatabaseException {
         if (sql instanceof NoSqlExecuteStatement) {
             try {
-                ((NoSqlExecuteStatement) sql).execute(cosmosDatabase);
+                ((NoSqlExecuteStatement<? extends AbstractNoSqlDatabase>) sql).execute(getDatabase());
             } catch (final Exception e) {
                 throw new DatabaseException("Could not execute", e);
             }
+        } else if (sql instanceof UpdateStatement) {
+            execute((UpdateStatement) sql);
         } else {
             throw new IllegalArgumentException();
         }
@@ -166,7 +202,7 @@ public class CosmosExecutor extends AbstractExecutor {
     public int update(final SqlStatement sql, final List<SqlVisitor> sqlVisitors) throws DatabaseException {
         if (sql instanceof NoSqlUpdateStatement) {
             try {
-                return ((NoSqlUpdateStatement) sql).update(cosmosDatabase);
+                return ((NoSqlUpdateStatement<? extends AbstractNoSqlDatabase>) sql).update(getDatabase());
             } catch (final Exception e) {
                 throw new DatabaseException("Could not execute", e);
             }

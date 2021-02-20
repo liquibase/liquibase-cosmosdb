@@ -36,7 +36,6 @@ public abstract class AbstractCosmosIntegrationTest {
 
     public static final String CONTAINER_NAME_PERSON = "person";
     public static final String PARTITION_KEY_PATH_LAST_NAME = "{ \"partitionKey\": {\"paths\": [\"/lastName\"], \"kind\": \"Hash\" } }";
-    public static final String DEFAULT_PARTITION_KEY_VALUE = "default";
 
     protected Properties testProperties;
     protected String connectionString;
