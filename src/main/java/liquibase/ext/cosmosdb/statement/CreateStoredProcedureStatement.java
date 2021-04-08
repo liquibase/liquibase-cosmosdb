@@ -45,12 +45,12 @@ public class CreateStoredProcedureStatement extends AbstractCosmosContainerState
         this(null, (String) null, null);
     }
 
-    public CreateStoredProcedureStatement(String containerName, String procedurePropertiesJson, Boolean replaceExisting) {
-        this(containerName, orEmptyStoredProcedureProperties(procedurePropertiesJson), replaceExisting);
+    public CreateStoredProcedureStatement(String containerId, String procedurePropertiesJson, Boolean replaceExisting) {
+        this(containerId, orEmptyStoredProcedureProperties(procedurePropertiesJson), replaceExisting);
     }
 
-    public CreateStoredProcedureStatement(String containerName, CosmosStoredProcedureProperties procedureProperties, Boolean replaceExisting) {
-        super(containerName);
+    public CreateStoredProcedureStatement(String containerId, CosmosStoredProcedureProperties procedureProperties, Boolean replaceExisting) {
+        super(containerId);
         this.procedureProperties = procedureProperties;
         this.replaceExisting = ofNullable(replaceExisting).orElse(FALSE);
     }
@@ -63,7 +63,7 @@ public class CreateStoredProcedureStatement extends AbstractCosmosContainerState
     @Override
     public String toJs() {
         return
-                "db." + getContainerName() + "."
+                "db." + getContainerId() + "."
                         + getCommandName()
                         + "("
                         + procedureProperties.toString()
@@ -74,7 +74,7 @@ public class CreateStoredProcedureStatement extends AbstractCosmosContainerState
     public void execute(final CosmosLiquibaseDatabase database) {
 
         final CosmosScripts cosmosScripts = database.getCosmosDatabase()
-                .getContainer(getContainerName()).getScripts();
+                .getContainer(getContainerId()).getScripts();
 
         if (replaceExisting) {
             //TODO: Not working, not clear why

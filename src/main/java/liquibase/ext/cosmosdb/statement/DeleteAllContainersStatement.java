@@ -33,14 +33,14 @@ public class DeleteAllContainersStatement extends AbstractCosmosStatement
 
     public static final String COMMAND_NAME = "deleteAllContainers";
 
-    final List<String> ignoreContainerNames;
+    final List<String> ignoreContainerIds;
 
     public DeleteAllContainersStatement() {
         this(Collections.emptyList());
     }
 
-    public DeleteAllContainersStatement(final List<String> ignoreContainerNames) {
-        this.ignoreContainerNames = ignoreContainerNames;
+    public DeleteAllContainersStatement(final List<String> ignoreContainerIds) {
+        this.ignoreContainerIds = ignoreContainerIds;
     }
 
     @Override
@@ -54,14 +54,14 @@ public class DeleteAllContainersStatement extends AbstractCosmosStatement
                 "db." +
                         getCommandName() +
                         "(" +
-                        ignoreContainerNames.toString() +
+                        ignoreContainerIds.toString() +
                         ");";
     }
 
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
         database.getCosmosDatabase().readAllContainers().stream()
-                .map(CosmosContainerProperties::getId).filter(id -> !ignoreContainerNames.contains(id))
+                .map(CosmosContainerProperties::getId).filter(id -> !ignoreContainerIds.contains(id))
                 .map((id) -> database.getCosmosDatabase().getContainer(id)).forEach(CosmosContainer::delete);
     }
 

@@ -31,9 +31,9 @@ public class MarkChangeSetRanStatement extends AbstractCosmosContainerStatement
     @Getter
     private final String deploymentId;
 
-    public MarkChangeSetRanStatement(final String containerName, final ChangeSet changeSet, final ChangeSet.ExecType execType
+    public MarkChangeSetRanStatement(final String containerId, final ChangeSet changeSet, final ChangeSet.ExecType execType
             , final Integer orderExecuted, final String deploymentId) {
-        super(containerName);
+        super(containerId);
         this.changeSet = changeSet;
         this.execType = execType;
         this.orderExecuted = orderExecuted;
@@ -51,7 +51,7 @@ public class MarkChangeSetRanStatement extends AbstractCosmosContainerStatement
                 "db."
                         + getCommandName()
                         + "("
-                        + containerName
+                        + containerId
                         + ", "
                         + changeSet
                         + ", "
@@ -66,7 +66,7 @@ public class MarkChangeSetRanStatement extends AbstractCosmosContainerStatement
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
         try {
-            final ChangeSetRepository repository = new ChangeSetRepository(database.getCosmosDatabase(), containerName);
+            final ChangeSetRepository repository = new ChangeSetRepository(database.getCosmosDatabase(), containerId);
 
             if (execType.equals(ChangeSet.ExecType.FAILED) || execType.equals(ChangeSet.ExecType.SKIPPED)) {
                 return; //don't mark

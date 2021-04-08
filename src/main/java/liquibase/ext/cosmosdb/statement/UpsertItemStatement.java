@@ -21,7 +21,6 @@ package liquibase.ext.cosmosdb.statement;
  */
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.CosmosDatabase;
 import com.azure.cosmos.implementation.Document;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 import lombok.EqualsAndHashCode;
@@ -35,12 +34,12 @@ public class UpsertItemStatement extends CreateItemStatement {
 
     public static final String COMMAND_NAME = "upsertItem";
 
-    public UpsertItemStatement(final String containerName, final String jsonDocument) {
-        this(containerName, orEmptyDocument(jsonDocument));
+    public UpsertItemStatement(final String containerId, final String jsonDocument) {
+        this(containerId, orEmptyDocument(jsonDocument));
     }
 
-    public UpsertItemStatement(final String containerName, final Document document) {
-        super(containerName, document);
+    public UpsertItemStatement(final String containerId, final Document document) {
+        super(containerId, document);
     }
 
     @Override
@@ -51,7 +50,7 @@ public class UpsertItemStatement extends CreateItemStatement {
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
 
-        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(getContainerName());
+        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(getContainerId());
         cosmosContainer.upsertItem(getDocument());
     }
 

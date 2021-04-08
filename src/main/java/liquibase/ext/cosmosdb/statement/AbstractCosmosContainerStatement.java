@@ -30,13 +30,13 @@ public abstract class AbstractCosmosContainerStatement extends AbstractCosmosSta
     public static final String ITEM_ID_1_STRING = "1";
 
     @Getter
-    protected final String containerName;
+    protected final String containerId;
 
     @Override
     public String toJs() {
         return getCommandName() +
                 "(" +
-                getContainerName() +
+                getContainerId() +
                 ");";
     }
 }

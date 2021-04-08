@@ -30,10 +30,10 @@ import lombok.Getter;
 public class CountContainersByNameStatement extends AbstractCosmosContainerStatement
         implements NoSqlQueryForLongStatement<CosmosLiquibaseDatabase> {
 
-    public static final String COMMAND_NAME = "countContainersByName";
+    public static final String COMMAND_NAME = "countContainersById";
 
-    public CountContainersByNameStatement(final String containerName) {
-        super(containerName);
+    public CountContainersByNameStatement(final String containerId) {
+        super(containerId);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class CountContainersByNameStatement extends AbstractCosmosContainerState
 
     @Override
     public long queryForLong(final CosmosLiquibaseDatabase database) {
-        return database.getCosmosDatabase().readAllContainers().stream().filter(c -> c.getId().equals(getContainerName())).count();
+        return database.getCosmosDatabase().readAllContainers().stream().filter(c -> c.getId().equals(getContainerId())).count();
     }
 
 }

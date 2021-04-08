@@ -42,12 +42,12 @@ public class CreateItemStatement extends AbstractCosmosContainerStatement
         this(null, (String) null);
     }
 
-    public CreateItemStatement(final String containerName, final String jsonDocument) {
-        this(containerName, orEmptyDocument(jsonDocument));
+    public CreateItemStatement(final String containerId, final String jsonDocument) {
+        this(containerId, orEmptyDocument(jsonDocument));
     }
 
-    public CreateItemStatement(final String containerName, final Document document) {
-        super(containerName);
+    public CreateItemStatement(final String containerId, final Document document) {
+        super(containerId);
         this.document = document;
     }
 
@@ -60,7 +60,7 @@ public class CreateItemStatement extends AbstractCosmosContainerStatement
     public String toJs() {
         return
                 "db." +
-                        containerName +
+                        containerId +
                         "." +
                         getCommandName() +
                         "(" +
@@ -71,7 +71,7 @@ public class CreateItemStatement extends AbstractCosmosContainerStatement
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
 
-        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerName);
+        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerId);
         cosmosContainer.createItem(document);
     }
 

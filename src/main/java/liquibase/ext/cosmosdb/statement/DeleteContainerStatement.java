@@ -39,13 +39,13 @@ public class DeleteContainerStatement extends AbstractCosmosContainerStatement
 
     private final Boolean skipMissing;
 
-    public DeleteContainerStatement(final String containerName, final Boolean skipMissing) {
-        super(containerName);
+    public DeleteContainerStatement(final String containerId, final Boolean skipMissing) {
+        super(containerId);
         this.skipMissing = skipMissing;
     }
 
-    public DeleteContainerStatement(final String containerName) {
-        this(containerName, FALSE);
+    public DeleteContainerStatement(final String containerId) {
+        this(containerId, FALSE);
     }
 
     public DeleteContainerStatement() {
@@ -61,7 +61,7 @@ public class DeleteContainerStatement extends AbstractCosmosContainerStatement
     public String toJs() {
         return
                 "db." +
-                        getContainerName() +
+                        getContainerId() +
                         "." +
                         getCommandName() +
                         "(" +
@@ -72,11 +72,11 @@ public class DeleteContainerStatement extends AbstractCosmosContainerStatement
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
         if (TRUE.equals(skipMissing) && database.getCosmosDatabase().readAllContainers()
-                .stream().map(CosmosContainerProperties::getId).noneMatch(c -> c.equals(containerName))) {
+                .stream().map(CosmosContainerProperties::getId).noneMatch(c -> c.equals(containerId))) {
             return;
         }
 
-        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerName);
+        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerId);
         cosmosContainer.delete();
     }
 

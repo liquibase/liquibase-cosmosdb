@@ -6,8 +6,8 @@ public class GetNextChangeSetSequenceValueStatement extends CountDocumentsInCont
 
     public static final String COMMAND_NAME = "nextChangeSetSequence";
 
-    public GetNextChangeSetSequenceValueStatement(final String containerName) {
-        super(containerName);
+    public GetNextChangeSetSequenceValueStatement(final String containerId) {
+        super(containerId);
     }
 
     @Override

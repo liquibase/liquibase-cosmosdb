@@ -41,21 +41,21 @@ public class CreateContainerStatement extends AbstractCosmosStatement
 
     public static final String COMMAND_NAME = "createContainer";
 
-    private final String containerName;
+    private final String containerId;
     private final String containerProperties;
     private final String throughputProperties;
     private final Boolean skipExisting;
 
-    public CreateContainerStatement(final String containerName, final String containerProperties, final String throughputProperties) {
-        this(containerName, containerProperties, throughputProperties, FALSE);
+    public CreateContainerStatement(final String containerId, final String containerProperties, final String throughputProperties) {
+        this(containerId, containerProperties, throughputProperties, FALSE);
     }
 
-    public CreateContainerStatement(final String containerName, final String containerProperties) {
-        this(containerName, containerProperties, null);
+    public CreateContainerStatement(final String containerId, final String containerProperties) {
+        this(containerId, containerProperties, null);
     }
 
-    public CreateContainerStatement(final String containerName) {
-        this(containerName, null);
+    public CreateContainerStatement(final String containerId) {
+        this(containerId, null);
     }
 
     public CreateContainerStatement() {
@@ -73,7 +73,7 @@ public class CreateContainerStatement extends AbstractCosmosStatement
                 "db."
                         + getCommandName()
                         + "("
-                        + getContainerName()
+                        + getContainerId()
                         + ", "
                         + getContainerProperties()
                         + ", "
@@ -85,7 +85,7 @@ public class CreateContainerStatement extends AbstractCosmosStatement
 
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
-        final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerName(), getContainerProperties());
+        final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerId(), getContainerProperties());
         final ThroughputProperties cosmosThroughputProperties = toThroughputProperties(getThroughputProperties());
         if (ofNullable(skipExisting).orElse(FALSE)) {
             database.getCosmosDatabase().createContainerIfNotExists(cosmosContainerProperties, cosmosThroughputProperties);

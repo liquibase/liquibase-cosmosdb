@@ -38,13 +38,13 @@ public class DeleteEachItemStatement extends AbstractCosmosContainerStatement
 
     private final SqlQuerySpec query;
 
-    public DeleteEachItemStatement(final String containerName, final String jsonQuery) {
-        super(containerName);
+    public DeleteEachItemStatement(final String containerId, final String jsonQuery) {
+        super(containerId);
         this.query = orEmptySqlQuerySpec(jsonQuery);
     }
 
-    public DeleteEachItemStatement(final String containerName, final SqlQuerySpec query) {
-        super(containerName);
+    public DeleteEachItemStatement(final String containerId, final SqlQuerySpec query) {
+        super(containerId);
         this.query = query;
     }
 
@@ -54,7 +54,7 @@ public class DeleteEachItemStatement extends AbstractCosmosContainerStatement
 
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
-        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerName);
+        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerId);
 
         //TODO: Test with partitions, not clear which one will be deleted
         cosmosContainer.queryItems(query, null, Map.class).stream()

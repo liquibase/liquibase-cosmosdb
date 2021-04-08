@@ -20,7 +20,6 @@ package liquibase.ext.cosmosdb.changelog;
  * #L%
  */
 
-import com.azure.cosmos.CosmosDatabase;
 import liquibase.changelog.RanChangeSet;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 import liquibase.ext.cosmosdb.statement.AbstractCosmosContainerStatement;
@@ -39,8 +38,8 @@ public class SelectChangeLogRanChangeSetsStatement extends AbstractCosmosContain
 
     public static final String COMMAND_NAME = "selectRanChangeSets";
 
-    public SelectChangeLogRanChangeSetsStatement(final String containerName) {
-        super(containerName);
+    public SelectChangeLogRanChangeSetsStatement(final String containerId) {
+        super(containerId);
     }
 
     @Override
@@ -49,7 +48,7 @@ public class SelectChangeLogRanChangeSetsStatement extends AbstractCosmosContain
     }
 
     public List<CosmosRanChangeSet> readAll(final CosmosLiquibaseDatabase database) {
-        final ChangeSetRepository repository = new ChangeSetRepository(database.getCosmosDatabase(), getContainerName());
+        final ChangeSetRepository repository = new ChangeSetRepository(database.getCosmosDatabase(), getContainerId());
         return repository.getAll().stream()
                 .sorted(Comparator.comparing(RanChangeSet::getDateExecuted)).collect(Collectors.toList());
     }

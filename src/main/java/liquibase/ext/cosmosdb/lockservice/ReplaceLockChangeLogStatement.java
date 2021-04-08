@@ -56,8 +56,8 @@ public class ReplaceLockChangeLogStatement extends AbstractCosmosContainerStatem
     @Getter
     private final boolean locked;
 
-    public ReplaceLockChangeLogStatement(final String containerName, final boolean locked) {
-        super(containerName);
+    public ReplaceLockChangeLogStatement(final String containerId, final boolean locked) {
+        super(containerId);
         this.locked = locked;
     }
 
@@ -71,13 +71,13 @@ public class ReplaceLockChangeLogStatement extends AbstractCosmosContainerStatem
         return "db." +
                 getCommandName() +
                 "(" +
-                containerName +
+                containerId +
                 ", " + locked +
                 ");";
     }
 
     protected int replace(final CosmosLiquibaseDatabase database) {
-        final ChangeLogLockRepository repository = new ChangeLogLockRepository(database.getCosmosDatabase(), getContainerName());
+        final ChangeLogLockRepository repository = new ChangeLogLockRepository(database.getCosmosDatabase(), getContainerId());
 
         final CosmosChangeLogLock lockEntry = new CosmosChangeLogLock(ITEM_ID_1, new Date()
                 , HOST_NAME + HOST_DESCRIPTION + " (" + HOST_ADDRESS + ")", locked);

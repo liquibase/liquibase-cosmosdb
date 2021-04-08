@@ -35,8 +35,8 @@ public class CountDocumentsInContainerStatement extends AbstractCosmosContainerS
 
     public static final String COMMAND_NAME = "countDocumentsInContainer";
 
-    public CountDocumentsInContainerStatement(final String containerName) {
-        super(containerName);
+    public CountDocumentsInContainerStatement(final String containerId) {
+        super(containerId);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class CountDocumentsInContainerStatement extends AbstractCosmosContainerS
 
     @Override
     public long queryForLong(final CosmosLiquibaseDatabase database) {
-        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(getContainerName());
+        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(getContainerId());
         return cosmosContainer.readAllItems(JsonUtils.DEFAULT_PARTITION_KEY, Map.class).stream().count();
     }
 

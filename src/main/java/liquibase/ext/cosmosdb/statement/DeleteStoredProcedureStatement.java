@@ -41,12 +41,12 @@ public class DeleteStoredProcedureStatement extends AbstractCosmosContainerState
     private final CosmosStoredProcedureProperties procedureProperties;
     private final Boolean skipMissing;
 
-    public DeleteStoredProcedureStatement(final String containerName, final String procedurePropertiesJson, final Boolean skipMissing) {
-        this(containerName, orEmptyStoredProcedureProperties(procedurePropertiesJson), skipMissing);
+    public DeleteStoredProcedureStatement(final String containerId, final String procedurePropertiesJson, final Boolean skipMissing) {
+        this(containerId, orEmptyStoredProcedureProperties(procedurePropertiesJson), skipMissing);
     }
 
-    public DeleteStoredProcedureStatement(final String containerName, final CosmosStoredProcedureProperties procedureProperties, final Boolean skipMissing) {
-        super(containerName);
+    public DeleteStoredProcedureStatement(final String containerId, final CosmosStoredProcedureProperties procedureProperties, final Boolean skipMissing) {
+        super(containerId);
         this.procedureProperties = procedureProperties;
         this.skipMissing = ofNullable(skipMissing).orElse(FALSE);
     }
@@ -63,7 +63,7 @@ public class DeleteStoredProcedureStatement extends AbstractCosmosContainerState
     @Override
     public String toJs() {
         return
-                "db." + getContainerName() + "."
+                "db." + getContainerId() + "."
                         + getCommandName()
                         + "("
                         + procedureProperties.toString()
@@ -73,7 +73,7 @@ public class DeleteStoredProcedureStatement extends AbstractCosmosContainerState
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
 
-        final CosmosScripts cosmosScripts = database.getCosmosDatabase().getContainer(getContainerName()).getScripts();
+        final CosmosScripts cosmosScripts = database.getCosmosDatabase().getContainer(getContainerId()).getScripts();
 
         if (skipMissing) {
             if (cosmosScripts.readAllStoredProcedures()

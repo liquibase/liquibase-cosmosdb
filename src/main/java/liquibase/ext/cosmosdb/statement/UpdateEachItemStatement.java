@@ -37,13 +37,13 @@ public class UpdateEachItemStatement extends CreateItemStatement {
 
     private final SqlQuerySpec query;
 
-    public UpdateEachItemStatement(final String containerName, final String jsonQuery, final String jsonDocument) {
-        super(containerName, jsonDocument);
+    public UpdateEachItemStatement(final String containerId, final String jsonQuery, final String jsonDocument) {
+        super(containerId, jsonDocument);
         this.query = orEmptySqlQuerySpec(jsonQuery);
     }
 
-    public UpdateEachItemStatement(final String containerName, final SqlQuerySpec query, final Document document) {
-        super(containerName, document);
+    public UpdateEachItemStatement(final String containerId, final SqlQuerySpec query, final Document document) {
+        super(containerId, document);
         this.query = query;
     }
 
@@ -58,7 +58,7 @@ public class UpdateEachItemStatement extends CreateItemStatement {
 
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
-        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerName);
+        final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerId);
 
         final Document source = getDocument();
 

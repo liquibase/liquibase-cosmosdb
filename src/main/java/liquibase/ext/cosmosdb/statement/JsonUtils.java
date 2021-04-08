@@ -104,9 +104,9 @@ public final class JsonUtils {
         return destination;
     }
 
-    public static CosmosContainerProperties toContainerProperties(final String containerName, final String containerPropertiesJson) {
+    public static CosmosContainerProperties toContainerProperties(final String containerId, final String containerPropertiesJson) {
 
-        final CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(containerName, DEFAULT_PARTITION_KEY_PATH);
+        final CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(containerId, DEFAULT_PARTITION_KEY_PATH);
         if (isNotEmpty(trimToNull(containerPropertiesJson))) {
             final DocumentCollection documentCollection = new DocumentCollection(containerPropertiesJson);
             if (nonNull(documentCollection.getPartitionKey())) {

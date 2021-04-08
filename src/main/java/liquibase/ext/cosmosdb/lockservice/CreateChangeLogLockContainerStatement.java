@@ -31,7 +31,7 @@ public class CreateChangeLogLockContainerStatement extends CreateContainerStatem
 
     /**
      * See {@link DocumentCollection}. Will be parsed from json apart from id.
-     * Container id will be populated from {@link CreateChangeLogContainerStatement#getContainerName()}
+     * Container id will be populated from {@link CreateChangeLogContainerStatement#getContainerId()}
      */
     private static final String OPTIONS = String.format("{  \n" +
             "  \"indexingPolicy\": {  \n" +

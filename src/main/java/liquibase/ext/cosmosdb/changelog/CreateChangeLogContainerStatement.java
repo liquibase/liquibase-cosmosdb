@@ -30,7 +30,7 @@ public class CreateChangeLogContainerStatement extends CreateContainerStatement 
 
     /**
      * See {@link DocumentCollection}. Will be parsed from json apart from id.
-     * Container id will be populated from {@link CreateChangeLogContainerStatement#containerName}
+     * Container id will be populated from {@link CreateChangeLogContainerStatement#getContainerId()}
      */
     private static final String OPTIONS = String.format("{  \n" +
                     "  \"indexingPolicy\": {  \n" +
@@ -71,8 +71,8 @@ public class CreateChangeLogContainerStatement extends CreateContainerStatement 
             CosmosRanChangeSet.Fields.AUTHOR,
             CosmosRanChangeSet.Fields.CHANGE_SET_ID);
 
-    public CreateChangeLogContainerStatement(final String containerName) {
-        super(containerName, OPTIONS);
+    public CreateChangeLogContainerStatement(final String containerId) {
+        super(containerId, OPTIONS);
     }
 
     @Override

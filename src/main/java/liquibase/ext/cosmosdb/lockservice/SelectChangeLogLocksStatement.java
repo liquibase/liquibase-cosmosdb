@@ -36,8 +36,8 @@ public class SelectChangeLogLocksStatement extends AbstractCosmosContainerStatem
 
     public static final String COMMAND_NAME = "selectLocks";
 
-    public SelectChangeLogLocksStatement(final String containerName) {
-        super(containerName);
+    public SelectChangeLogLocksStatement(final String containerId) {
+        super(containerId);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class SelectChangeLogLocksStatement extends AbstractCosmosContainerStatem
 
     public List<CosmosChangeLogLock> readAll(final CosmosLiquibaseDatabase database) {
         final ChangeLogLockRepository repository =
-                new ChangeLogLockRepository(database.getCosmosDatabase(), getContainerName());
+                new ChangeLogLockRepository(database.getCosmosDatabase(), getContainerId());
         return repository.getAll().stream().filter(CosmosChangeLogLock::getLocked)
                 .collect(Collectors.toList());
     }
