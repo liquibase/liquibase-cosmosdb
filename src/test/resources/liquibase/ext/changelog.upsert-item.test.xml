@@ -75,4 +75,86 @@
 
     </changeSet>
 
+    <changeSet id="4" author="alex">
+        <comment>Create container</comment>
+
+        <ext:createContainer containerId="container2">
+            <ext:containerProperties>
+                <!-- @formatter:off -->
+                {
+                  "id": "Container Id will be taken from: containerId attribute",
+                  "partitionKey": {
+                    "paths": [
+                      "/partition"
+                    ],
+                    "kind": "Hash"
+                  },
+                }
+                <!-- @formatter:on -->
+            </ext:containerProperties>
+        </ext:createContainer>
+
+    </changeSet>
+
+    <changeSet id="5" author="alex">
+
+        <comment>Insert two items in different partitions</comment>
+
+        <ext:createItem containerId="container2">
+
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                "id" : "1",
+                "oldField" : "Will Remain",
+                "changeValueField" : "Old Value",
+                "sameValueField" : "Remains Same",
+                "partition" : "default1"
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+
+        </ext:createItem>
+
+        <ext:createItem containerId="container2">
+
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                "id" : "1",
+                "oldField" : "Will be Removed",
+                "changeValueField" : "Old Value",
+                "sameValueField" : "Remains Same",
+                "partition" : "default2"
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+
+        </ext:createItem>
+
+    </changeSet>
+
+    <changeSet id="6" author="alex">
+
+        <comment>Upsert an item</comment>
+
+        <ext:upsertItem containerId="container2">
+
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                "id" : "1",
+                "changeValueField" : "New Value",
+                "sameValueField" : "Remains Same",
+                "newField" : "Will be Added",
+                "partition" : "default2"
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+
+        </ext:upsertItem>
+
+    </changeSet>
+
+
 </databaseChangeLog>

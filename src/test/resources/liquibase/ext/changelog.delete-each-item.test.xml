@@ -79,6 +79,105 @@
             <ext:query>
                 <!-- @formatter:off -->
                 {
+                "query" : "SELECT * FROM c WHERE c.name = @name",
+                    "parameters" : [
+                        {
+                            "name" : "@name",
+                            "value" : "To Be Deleted"
+                        }
+                    ]
+                }
+                <!-- @formatter:on -->
+            </ext:query>
+
+        </ext:deleteEachItem>
+
+    </changeSet>
+
+    <changeSet id="1" author="victor">
+        <comment>Create container</comment>
+
+        <ext:createContainer containerId="deleteEachContainer2">
+            <ext:containerProperties>
+                <!-- @formatter:off -->
+                {
+                  "id": "Container Id will be taken from: containerId attribute",
+                  "partitionKey": {
+                    "paths": [
+                      "/partition"
+                    ],
+                    "kind": "Hash"
+                  },
+                }
+                <!-- @formatter:on -->
+            </ext:containerProperties>
+        </ext:createContainer>
+
+    </changeSet>
+
+    <changeSet id="2" author="victor">
+
+        <comment>Insert three items</comment>
+
+        <ext:createItem containerId="deleteEachContainer2">
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                    "id" : "1",
+                    "name" : "To Be Deleted",
+                    "partition" : "default1"
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+        </ext:createItem>
+
+        <ext:createItem containerId="deleteEachContainer2">
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                    "id" : "2",
+                    "name" : "Not To Be Deleted",
+                    "partition" : "default2"
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+        </ext:createItem>
+
+        <ext:createItem containerId="deleteEachContainer2">
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                    "id" : "3",
+                    "name" : "To Be Deleted",
+                    "partition" : "default2"
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+        </ext:createItem>
+
+        <ext:createItem containerId="deleteEachContainer2">
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                    "id" : "3",
+                    "name" : "To Be Deleted",
+                    "partition" : null
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+        </ext:createItem>
+
+    </changeSet>
+
+    <changeSet id="3" author="victor">
+
+        <comment>Delete each item by query</comment>
+
+        <ext:deleteEachItem containerId="deleteEachContainer2">
+
+            <ext:query>
+                <!-- @formatter:off -->
+                {
                     "query" : "SELECT * FROM c WHERE c.name = @name",
                     "parameters" : [
                         {

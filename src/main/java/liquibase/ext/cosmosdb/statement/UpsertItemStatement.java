@@ -22,6 +22,7 @@ package liquibase.ext.cosmosdb.statement;
 
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.implementation.Document;
+import com.azure.cosmos.models.PartitionKey;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -49,9 +50,9 @@ public class UpsertItemStatement extends CreateItemStatement {
 
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
-
         final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(getContainerId());
-        cosmosContainer.upsertItem(getDocument());
+        final PartitionKey key = JsonUtils.extractPartitionKey(getDocument(), cosmosContainer);
+                cosmosContainer.upsertItem(getDocument(), key, null);
     }
 
     @Override

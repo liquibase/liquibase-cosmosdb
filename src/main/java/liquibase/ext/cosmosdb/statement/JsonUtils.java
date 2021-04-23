@@ -20,6 +20,7 @@ package liquibase.ext.cosmosdb.statement;
  * #L%
  */
 
+import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.implementation.Document;
 import com.azure.cosmos.implementation.DocumentCollection;
 import com.azure.cosmos.implementation.JsonSerializable;
@@ -37,6 +38,7 @@ import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import lombok.NoArgsConstructor;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static com.azure.cosmos.implementation.Constants.Properties.AUTOPILOT_MAX_THROUGHPUT;
@@ -148,5 +150,21 @@ public final class JsonUtils {
             }
         }
         return null;
+    }
+
+    public static String extractPartitionKeyPath(final CosmosContainer cosmosContainer) {
+        final CosmosContainerProperties cosmosContainerProperties = cosmosContainer.read().getProperties();
+        return cosmosContainerProperties.getPartitionKeyDefinition().getPaths().stream().findFirst().orElse(DEFAULT_PARTITION_KEY_PATH);
+    }
+
+    public static PartitionKey extractPartitionKeyByPath(final Document document, final String path) {
+        return ofNullable(
+                document.getObjectByPath(Arrays.asList(path.replaceFirst("/", "").split("/")))
+        ).map(PartitionKey::new).orElse(PartitionKey.NONE);
+    }
+
+    public static PartitionKey extractPartitionKey(final Document document, final CosmosContainer cosmosContainer) {
+        return extractPartitionKeyByPath(document,
+                extractPartitionKeyPath(cosmosContainer));
     }
 }

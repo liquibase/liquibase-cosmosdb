@@ -26,9 +26,12 @@ import com.azure.cosmos.models.CosmosStoredProcedureProperties;
 import com.azure.cosmos.models.IndexingMode;
 import com.azure.cosmos.models.ThroughputProperties;
 import liquibase.Liquibase;
+import liquibase.change.CheckSum;
 import liquibase.ext.cosmosdb.changelog.CosmosRanChangeSet;
+import liquibase.ext.cosmosdb.changelog.SelectChangeLogRanChangeSetsStatement;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -38,8 +41,18 @@ import java.util.stream.Collectors;
 
 import static liquibase.ext.cosmosdb.statement.JsonUtils.QUERY_SELECT_ALL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
+
+    protected SelectChangeLogRanChangeSetsStatement findAllRanChangeSets;
+
+
+    @BeforeEach
+    protected void setUpEach() {
+        super.setUpEach();
+        findAllRanChangeSets = new SelectChangeLogRanChangeSetsStatement(database.getDatabaseChangeLogTableName());
+    }
 
     @SneakyThrows
     @Test
@@ -133,7 +146,7 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
         //                .returns("function() sproc_2 {var context = getContext(); var response = context.getResponse(); response.setBody(\"Replaced\");}",
         //                CosmosStoredProcedureProperties::getBody);
 
-        assertThat(container.getScripts().readAllStoredProcedures().stream().map(CosmosStoredProcedureProperties::getId).anyMatch( p -> p.equals("sproc_3")))
+        assertThat(container.getScripts().readAllStoredProcedures().stream().map(CosmosStoredProcedureProperties::getId).anyMatch(p -> p.equals("sproc_3")))
                 .isFalse();
     }
 
@@ -253,90 +266,150 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
         final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.upsert-item.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
 
-        // createContainer, createItem, upsertItem = 3 rows in log
-        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName())
-                .queryItems(QUERY_SELECT_ALL, null, Map.class).stream().count()).isEqualTo(3L);
+        List<CosmosRanChangeSet> changeSets = findAllRanChangeSets.queryForList(database);
+        assertThat(changeSets).hasSize(6)
+                .extracting(CosmosRanChangeSet::getId, CosmosRanChangeSet::getOrderExecuted, CosmosRanChangeSet::getLastCheckSum)
+                .containsExactly(
+                        tuple("1", 1, CheckSum.parse("8:33708e6a36985ab9c125845f7fa3c40f")),
+                        tuple("2", 2, CheckSum.parse("8:3daf396cd0b98414d7cdd2585025cb4a")),
+                        tuple("3", 3, CheckSum.parse("8:eeaa6203312f314069e0cf94996f9e86")),
+                        tuple("4", 4, CheckSum.parse("8:bf0f99951de19a13bc5a71a181acf601")),
+                        tuple("5", 5, CheckSum.parse("8:eac9097e490cc40cc6c8fd1f00204970")),
+                        tuple("6", 6, CheckSum.parse("8:f909594318be69a3f8ffb60cfb835dda")));
 
-        Map<?, ?> document = cosmosDatabase.getContainer("container1").queryItems(QUERY_SELECT_ALL, null, Map.class)
-                .stream().filter(i -> ((Map<?, ?>) i).get("id").equals("1")).findFirst().orElse(null);
+        List<Map<?, ?>> documents = cosmosDatabase.getContainer("container1").queryItems(QUERY_SELECT_ALL, null, Map.class)
+                .stream().map(d -> (Map<?, ?>) d).collect(Collectors.toList());
 
-        assertThat(document).isNotNull();
-        assertThat(document.get("oldField")).isNull();
-        assertThat(document.get("changeValueField")).isEqualTo("New Value");
-        assertThat(document.get("sameValueField")).isEqualTo("Remains Same");
-        assertThat(document.get("newField")).isEqualTo("Will be Added");
-        assertThat(document.get("partition")).isEqualTo("default");
+        assertThat(documents).hasSize(1)
+                .extracting(
+                        d -> d.get("id"),
+                        d -> d.get("oldField"),
+                        d -> d.get("changeValueField"),
+                        d -> d.get("sameValueField"),
+                        d -> d.get("newField"),
+                        d -> d.get("partition"))
+                .containsExactly(
+                        tuple("1", null, "New Value", "Remains Same", "Will be Added", "default")
+                );
+
+        documents = cosmosDatabase.getContainer("container2").queryItems(QUERY_SELECT_ALL, null, Map.class)
+                .stream().map(d -> (Map<?, ?>) d).collect(Collectors.toList());
+
+        assertThat(documents).hasSize(2)
+                .extracting(
+                        d -> d.get("id"),
+                        d -> d.get("oldField"),
+                        d -> d.get("changeValueField"),
+                        d -> d.get("sameValueField"),
+                        d -> d.get("newField"),
+                        d -> d.get("partition"))
+                .containsExactly(
+                        tuple("1", "Will Remain", "Old Value", "Remains Same", null, "default1"),
+                        tuple("1", null, "New Value", "Remains Same", "Will be Added", "default2")
+                );
     }
-
 
     @SneakyThrows
     @Test
-    @SuppressWarnings("unchecked")
     void testUpdateUpdateEachItem() {
         final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.update-each-item.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
 
-        // createContainer, createItem, upsertItem = 3 rows in log
-        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName())
-                .queryItems(QUERY_SELECT_ALL, null, Map.class).stream().count()).isEqualTo(4L);
+        List<CosmosRanChangeSet> changeSets = findAllRanChangeSets.queryForList(database);
+        assertThat(changeSets).hasSize(8)
+                .extracting(CosmosRanChangeSet::getId, CosmosRanChangeSet::getAuthor, CosmosRanChangeSet::getOrderExecuted, CosmosRanChangeSet::getLastCheckSum)
+                .containsExactly(
+                        tuple("1", "victor", 1, CheckSum.parse("8:e78c81df936cd78f928a1ddafb50c3ea")),
+                        tuple("2", "victor", 2, CheckSum.parse("8:2b8754b30562ccc33bfb63d844dc3845")),
+                        tuple("3", "victor", 3, CheckSum.parse("8:38dd32a12b1e1ba4a603060d7fc3590a")),
+                        tuple("4", "victor", 4, CheckSum.parse("8:274d43387a06d3028f317064da4362e7")),
+                        tuple("1", "alex", 5, CheckSum.parse("8:b6d04ba24f79979de61e4b41f34e6ee5")),
+                        tuple("2", "alex", 6, CheckSum.parse("8:0eabd6f5d517e926a36972dc398c27e7")),
+                        tuple("3", "alex", 7, CheckSum.parse("8:c0d57c05a381f6348bd1d0edce64887d")),
+                        tuple("4", "alex", 8, CheckSum.parse("8:ab821f2b572ef4265b1aa54f44d56377")));
 
-        Map<String, ?> document = cosmosDatabase.getContainer("container1").queryItems(QUERY_SELECT_ALL, null, Map.class)
-                .stream().filter(i -> ((Map<String, ?>) i).get("id").equals("1")).findFirst().orElse(null);
+        // check non partitioned items
+        List<Map<?, ?>> documents = cosmosDatabase.getContainer("container0").queryItems(QUERY_SELECT_ALL, null, Map.class)
+                .stream().map(d -> (Map<?, ?>) d).collect(Collectors.toList());
 
-        assertThat(document).isNotNull()
-                .hasFieldOrPropertyWithValue("id", "1")
-                .hasFieldOrPropertyWithValue("changedField", "Value Changed")
-                .hasFieldOrPropertyWithValue("remainedField", "Remains Same1")
-                .hasFieldOrPropertyWithValue("onlyIn1Field", "Remains Only1")
-                .doesNotContainKey("onlyIn2Field")
-                .doesNotContainKey("onlyIn3Field")
-                .hasFieldOrPropertyWithValue("addedField", "Added Value")
-                .hasFieldOrPropertyWithValue("partition", "default");
+        assertThat(documents).hasSize(3)
+                .extracting(
+                        d -> d.get("id"),
+                        d -> d.get("changedField"),
+                        d -> d.get("remainedField"),
+                        d -> d.get("onlyIn1Field"),
+                        d -> d.get("onlyIn2Field"),
+                        d -> d.get("onlyIn3Field"),
+                        d -> d.get("partition"))
+                .containsExactly(
+                        tuple("1", "Value Changed", "Remains Same1", "Remains Only1", null, null, "default"),
+                        tuple("2", "Value Changed", "Remains Same2", null, "Remains Only2", null, "default"),
+                        tuple("3", "Value Unchanged", "Remains Same3", null, null, "Remains Only3", "default")
+                );
 
-        document = cosmosDatabase.getContainer("container1").queryItems(QUERY_SELECT_ALL, null, Map.class)
-                .stream().filter(i -> ((Map<String, ?>) i).get("id").equals("2")).findFirst().orElse(null);
+        // check partitioned items
+        documents = cosmosDatabase.getContainer("container1").queryItems(QUERY_SELECT_ALL, null, Map.class)
+                .stream().map(d -> (Map<?, ?>) d).collect(Collectors.toList());
 
-        assertThat(document).isNotNull()
-                .hasFieldOrPropertyWithValue("id", "2")
-                .hasFieldOrPropertyWithValue("changedField", "Value Changed")
-                .hasFieldOrPropertyWithValue("remainedField", "Remains Same2")
-                .hasFieldOrPropertyWithValue("onlyIn2Field", "Remains Only2")
-                .doesNotContainKey("onlyIn1Field")
-                .doesNotContainKey("onlyIn3Field")
-                .hasFieldOrPropertyWithValue("addedField", "Added Value")
-                .hasFieldOrPropertyWithValue("partition", "default");
+        assertThat(documents).hasSize(3)
+                .extracting(
+                        d -> d.get("id"),
+                        d -> d.get("changedField"),
+                        d -> d.get("remainedField"),
+                        d -> d.get("onlyIn1Field"),
+                        d -> d.get("onlyIn2Field"),
+                        d -> d.get("onlyIn3Field"),
+                        d -> ((Map<?, ?>) d.get("partition")).get("field"))
+                .containsExactly(
+                        tuple("1", "Value Changed", "Remains Same1", "Remains Only1", null, null, "default1"),
+                        tuple("2", "Value Changed", "Remains Same2", null, "Remains Only2", null, "default2"),
+                        tuple("3", "Value Unchanged", "Remains Same3", null, null, "Remains Only3", "default3")
+                );
 
-        document = cosmosDatabase.getContainer("container1").queryItems(QUERY_SELECT_ALL, null, Map.class)
-                .stream().filter(i -> ((Map<String, ?>) i).get("id").equals("3")).findFirst().orElse(null);
-
-        assertThat(document).isNotNull()
-                .hasFieldOrPropertyWithValue("id", "3")
-                .hasFieldOrPropertyWithValue("changedField", "Value Unchanged")
-                .hasFieldOrPropertyWithValue("remainedField", "Remains Same3")
-                .hasFieldOrPropertyWithValue("onlyIn3Field", "Remains Only3")
-                .doesNotContainKey("onlyIn1Field")
-                .doesNotContainKey("onlyIn2Field")
-                .doesNotContainKey("addedField")
-                .hasFieldOrPropertyWithValue("partition", "default");
     }
 
     @SneakyThrows
     @Test
-    @SuppressWarnings("unchecked")
     void testUpdateDeleteEachItem() {
         final Liquibase liquibase = new Liquibase("liquibase/ext/changelog.delete-each-item.test.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update("");
 
-        // createContainer, createItem, upsertItem = 3 rows in log
-        assertThat(cosmosDatabase.getContainer(database.getDatabaseChangeLogTableName())
-                .queryItems(QUERY_SELECT_ALL, null, Map.class).stream().count()).isEqualTo(3L);
+        List<CosmosRanChangeSet> changeSets = findAllRanChangeSets.queryForList(database);
+        assertThat(changeSets).hasSize(6)
+                .extracting(CosmosRanChangeSet::getId, CosmosRanChangeSet::getAuthor, CosmosRanChangeSet::getOrderExecuted, CosmosRanChangeSet::getLastCheckSum)
+                .containsExactly(
+                        tuple("1", "alex", 1, CheckSum.parse("8:48d852855bbfe6ba0514f7a912410372")),
+                        tuple("2", "alex", 2, CheckSum.parse("8:ac157a4bb06d5b9ba57b5bbf271de99f")),
+                        tuple("3", "alex", 3, CheckSum.parse("8:3ca6f0e723ae424832de701e8dedddae")),
+                        tuple("1", "victor", 4, CheckSum.parse("8:db57f1469eba09b27acc7522e9e92190")),
+                        tuple("2", "victor", 5, CheckSum.parse("8:671232a97c890eefa1ca727b5595c070")),
+                        tuple("3", "victor", 6, CheckSum.parse("8:b4991cc087c7d6a60c004b390a591313"))
+                );
 
-        List<Map<String, ?>> documents = cosmosDatabase.getContainer("deleteEachContainer1").queryItems(QUERY_SELECT_ALL, null, Map.class)
-                .stream().map(d->(Map<String, ?>)d).collect(Collectors.toList());
+        // check non partitioned items
+        List<Map<?, ?>> documents = cosmosDatabase.getContainer("deleteEachContainer1").queryItems(QUERY_SELECT_ALL, null, Map.class)
+                .stream().map(d -> (Map<?, ?>) d).collect(Collectors.toList());
 
-        assertThat(documents).hasSize(1).first()
-                .returns("2", d->d.get("id"))
-                .returns("Not To Be Deleted", d->d.get("name"));
+        assertThat(documents).hasSize(1)
+                .extracting(
+                        d -> d.get("id"),
+                        d -> d.get("name"))
+                .containsExactly(
+                        tuple("2", "Not To Be Deleted")
+                );
+
+        // check partitioned items
+        documents = cosmosDatabase.getContainer("deleteEachContainer2").queryItems(QUERY_SELECT_ALL, null, Map.class)
+                .stream().map(d -> (Map<?, ?>) d).collect(Collectors.toList());
+
+        assertThat(documents).hasSize(1)
+                .extracting(
+                        d -> d.get("id"),
+                        d -> d.get("name"),
+                        d -> d.get("partition"))
+                .containsExactly(
+                        tuple("2", "Not To Be Deleted", "default2")
+                );
     }
 
     @Test

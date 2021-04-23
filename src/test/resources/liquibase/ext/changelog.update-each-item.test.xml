@@ -24,10 +24,145 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="1" author="alex">
+    <changeSet id="1" author="victor">
         <comment>Create container</comment>
 
-        <ext:createContainer containerId="container1"/>
+        <ext:createContainer containerId="container0"/>
+
+    </changeSet>
+
+    <changeSet id="2" author="victor">
+
+        <comment>Insert three items</comment>
+
+        <ext:createItem containerId="container0">
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                    "id" : "1",
+                    "changedField" : "Will be Changed1",
+                    "remainedField" : "Remains Same1",
+                    "onlyIn1Field" : "Remains Only1",
+                    "partition" : "default"
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+        </ext:createItem>
+
+        <ext:createItem containerId="container0">
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                    "id" : "2",
+                    "changedField" : "Will be Changed2",
+                    "remainedField" : "Remains Same2",
+                    "onlyIn2Field" : "Remains Only2",
+                    "partition" : "default"
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+        </ext:createItem>
+
+        <ext:createItem containerId="container0">
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                    "id" : "3",
+                    "changedField" : "Value Unchanged",
+                    "remainedField" : "Remains Same3",
+                    "onlyIn3Field" : "Remains Only3",
+                    "partition" : "default"
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+        </ext:createItem>
+
+    </changeSet>
+
+    <changeSet id="3" author="victor">
+
+        <comment>Update each item by id</comment>
+
+        <ext:updateEachItem containerId="container0">
+
+            <ext:query>
+                <!-- @formatter:off -->
+                {
+                    "query" : "SELECT * FROM c WHERE c.id &lt;= @id",
+                    "parameters" : [
+                        {
+                            "name" : "@id",
+                            "value" : "2"
+                        }
+                    ]
+                }
+                <!-- @formatter:on -->
+            </ext:query>
+
+            <ext:document>
+                <!-- @formatter:off -->
+                {
+                    "changedField" : "Value Changed",
+                    "addedField" : "Added Value"
+                }
+                <!-- @formatter:on -->
+            </ext:document>
+
+        </ext:updateEachItem>
+
+    </changeSet>
+
+    <changeSet id="4" author="victor">
+
+        <comment>Update Will not affect anything by query</comment>
+
+        <ext:updateEachItem containerId="container0">
+
+            <ext:query>
+                <!-- @formatter:off -->
+            {
+                "query" : "SELECT * FROM c WHERE c.id &gt; @id",
+                "parameters" : [
+                    {
+                    "name" : "@id",
+                    "value" : "3"
+                    }
+                ]
+            }
+            <!-- @formatter:on -->
+            </ext:query>
+
+            <ext:document>
+                <!-- @formatter:off -->
+            {
+                "changedField" : "Unaffected Changed",
+            }
+            <!-- @formatter:on -->
+            </ext:document>
+
+        </ext:updateEachItem>
+
+    </changeSet>
+
+
+    <changeSet id="1" author="alex">
+        <comment>Create partitioned container with subfield in path</comment>
+
+        <ext:createContainer containerId="container1">
+            <ext:containerProperties>
+                <!-- @formatter:off -->
+                {
+                  "id": "Container Id will be taken from: containerId attribute",
+                  "partitionKey": {
+                    "paths": [
+                      "/partition/field"
+                    ],
+                    "kind": "Hash"
+                  },
+                }
+                <!-- @formatter:on -->
+            </ext:containerProperties>
+        </ext:createContainer>
 
     </changeSet>
 
@@ -43,7 +178,9 @@
                     "changedField" : "Will be Changed1",
                     "remainedField" : "Remains Same1",
                     "onlyIn1Field" : "Remains Only1",
-                    "partition" : "default"
+                    "partition" : {
+                        "field" : "default1"
+                    }
                 }
                 <!-- @formatter:on -->
             </ext:document>
@@ -57,7 +194,9 @@
                     "changedField" : "Will be Changed2",
                     "remainedField" : "Remains Same2",
                     "onlyIn2Field" : "Remains Only2",
-                    "partition" : "default"
+                    "partition" : {
+                        "field" : "default2"
+                    }
                 }
                 <!-- @formatter:on -->
             </ext:document>
@@ -71,7 +210,9 @@
                     "changedField" : "Value Unchanged",
                     "remainedField" : "Remains Same3",
                     "onlyIn3Field" : "Remains Only3",
-                    "partition" : "default"
+                    "partition" : {
+                        "field" : "default3"
+                    }
                 }
                 <!-- @formatter:on -->
             </ext:document>
@@ -116,10 +257,10 @@
 
         <comment>Update Will not affect anything by query</comment>
 
-    <ext:updateEachItem containerId="container1">
+        <ext:updateEachItem containerId="container1">
 
-        <ext:query>
-            <!-- @formatter:off -->
+            <ext:query>
+                <!-- @formatter:off -->
             {
                 "query" : "SELECT * FROM c WHERE c.id &gt; @id",
                 "parameters" : [
@@ -130,18 +271,18 @@
                 ]
             }
             <!-- @formatter:on -->
-        </ext:query>
+            </ext:query>
 
-        <ext:document>
-            <!-- @formatter:off -->
+            <ext:document>
+                <!-- @formatter:off -->
             {
                 "changedField" : "Unaffected Changed",
             }
             <!-- @formatter:on -->
-        </ext:document>
+            </ext:document>
 
-    </ext:updateEachItem>
+        </ext:updateEachItem>
 
-</changeSet>
+    </changeSet>
 
 </databaseChangeLog>

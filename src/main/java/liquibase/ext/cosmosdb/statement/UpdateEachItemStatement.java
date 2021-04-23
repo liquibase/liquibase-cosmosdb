@@ -22,6 +22,7 @@ package liquibase.ext.cosmosdb.statement;
 
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.implementation.Document;
+import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.models.SqlQuerySpec;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 
@@ -29,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static liquibase.ext.cosmosdb.statement.JsonUtils.extractPartitionKeyByPath;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.extractPartitionKeyPath;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.mergeDocuments;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptySqlQuerySpec;
 
 public class UpdateEachItemStatement extends CreateItemStatement {
@@ -59,17 +63,19 @@ public class UpdateEachItemStatement extends CreateItemStatement {
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
         final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerId);
+        final String partitionKeyPath = extractPartitionKeyPath(cosmosContainer);
 
         final Document source = getDocument();
 
         final List<Document> documents = cosmosContainer
                 .queryItems(query, null, Map.class).stream().map(JsonUtils::fromMap)
-                .map(Document.class::cast).map(d -> JsonUtils.mergeDocuments(d, source))
+                .map(Document.class::cast).map(d -> mergeDocuments(d, source))
                 .collect(Collectors.toList());
 
         documents.forEach(destination -> {
-            JsonUtils.mergeDocuments(source, destination);
-            cosmosContainer.upsertItem(destination);
+            mergeDocuments(source, destination);
+            final PartitionKey partitionKey = extractPartitionKeyByPath(destination, partitionKeyPath);
+            cosmosContainer.upsertItem(destination, partitionKey, null);
         });
     }
 

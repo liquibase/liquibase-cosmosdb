@@ -21,14 +21,19 @@ package liquibase.ext.cosmosdb.statement;
  */
 
 import com.azure.cosmos.CosmosContainer;
+import com.azure.cosmos.implementation.Document;
+import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.models.SqlQuerySpec;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 import liquibase.nosql.statement.NoSqlExecuteStatement;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static liquibase.ext.cosmosdb.statement.JsonUtils.COSMOS_ID_FIELD;
-import static liquibase.ext.cosmosdb.statement.JsonUtils.DEFAULT_PARTITION_KEY_PERSIST;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.extractPartitionKeyByPath;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.extractPartitionKeyPath;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptySqlQuerySpec;
 
 public class DeleteEachItemStatement extends AbstractCosmosContainerStatement
@@ -55,10 +60,17 @@ public class DeleteEachItemStatement extends AbstractCosmosContainerStatement
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
         final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerId);
+        final String partitionKeyPath = extractPartitionKeyPath(cosmosContainer);
 
-        //TODO: Test with partitions, not clear which one will be deleted
-        cosmosContainer.queryItems(query, null, Map.class).stream()
-                .forEach(d -> cosmosContainer.deleteItem((String) d.get(COSMOS_ID_FIELD), DEFAULT_PARTITION_KEY_PERSIST, null));
+        final List<Document> documents = cosmosContainer
+                .queryItems(query, null, Map.class).stream().map(JsonUtils::fromMap)
+                .map(Document.class::cast)
+                .collect(Collectors.toList());
+
+        documents.forEach(document -> {
+            final PartitionKey partitionKey = extractPartitionKeyByPath(document, partitionKeyPath);
+            cosmosContainer.deleteItem((String) document.get(COSMOS_ID_FIELD), partitionKey, null);
+        });
     }
 
     @Override
