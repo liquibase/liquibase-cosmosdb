@@ -10,9 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static liquibase.ext.cosmosdb.statement.JsonUtils.COSMOS_ID_FIELD;
-import static liquibase.ext.cosmosdb.statement.JsonUtils.DEFAULT_PARTITION_KEY_PERSIST;
-
+import static com.azure.cosmos.implementation.Constants.Properties.ID;
 
 public abstract class AbstractRepository<T> {
 
@@ -46,7 +44,7 @@ public abstract class AbstractRepository<T> {
     }
 
     public int create(final Map<String, Object> document) {
-        container.createItem(document, DEFAULT_PARTITION_KEY_PERSIST, null);
+        container.createItem(document, PartitionKey.NONE, null);
         return 1;
     }
 
@@ -57,7 +55,7 @@ public abstract class AbstractRepository<T> {
 
 
     public int replace(final Map<String, Object> document) {
-        container.replaceItem(document, (String)document.get(COSMOS_ID_FIELD), DEFAULT_PARTITION_KEY_PERSIST,  null);
+        container.replaceItem(document, (String)document.get(ID), PartitionKey.NONE,  null);
         return 1;
     }
 
@@ -77,7 +75,7 @@ public abstract class AbstractRepository<T> {
     }
 
     public int delete(final Map<String, Object> document) {
-        container.deleteItem((String)document.get(COSMOS_ID_FIELD), JsonUtils.DEFAULT_PARTITION_KEY,  null);
+        container.deleteItem((String)document.get(ID), PartitionKey.NONE,  null);
         return 1;
     }
 

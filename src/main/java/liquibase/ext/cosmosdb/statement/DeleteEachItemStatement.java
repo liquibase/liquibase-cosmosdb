@@ -24,14 +24,11 @@ import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.implementation.Document;
 import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.models.SqlQuerySpec;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 import liquibase.nosql.statement.NoSqlExecuteStatement;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static liquibase.ext.cosmosdb.statement.JsonUtils.COSMOS_ID_FIELD;
+import static com.azure.cosmos.implementation.Constants.Properties.ID;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.extractPartitionKeyByPath;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.extractPartitionKeyPath;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptySqlQuerySpec;
@@ -62,15 +59,13 @@ public class DeleteEachItemStatement extends AbstractCosmosContainerStatement
         final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(containerId);
         final String partitionKeyPath = extractPartitionKeyPath(cosmosContainer);
 
-        final List<Document> documents = cosmosContainer
-                .queryItems(query, null, Map.class).stream().map(JsonUtils::fromMap)
-                .map(Document.class::cast)
-                .collect(Collectors.toList());
-
-        documents.forEach(document -> {
-            final PartitionKey partitionKey = extractPartitionKeyByPath(document, partitionKeyPath);
-            cosmosContainer.deleteItem((String) document.get(COSMOS_ID_FIELD), partitionKey, null);
-        });
+        cosmosContainer
+                .queryItems(query, null, ObjectNode.class).stream()
+                .map(Document::new)
+                .forEach(document -> {
+                    final PartitionKey partitionKey = extractPartitionKeyByPath(document, partitionKeyPath);
+                    cosmosContainer.deleteItem((String) document.get(ID), partitionKey, null);
+                });
     }
 
     @Override

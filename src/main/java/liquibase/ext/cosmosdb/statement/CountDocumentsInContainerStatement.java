@@ -28,6 +28,8 @@ import lombok.Getter;
 
 import java.util.Map;
 
+import static liquibase.ext.cosmosdb.statement.JsonUtils.QUERY_SELECT_ALL;
+
 @Getter
 @EqualsAndHashCode(callSuper = true)
 public class CountDocumentsInContainerStatement extends AbstractCosmosContainerStatement
@@ -47,7 +49,7 @@ public class CountDocumentsInContainerStatement extends AbstractCosmosContainerS
     @Override
     public long queryForLong(final CosmosLiquibaseDatabase database) {
         final CosmosContainer cosmosContainer = database.getCosmosDatabase().getContainer(getContainerId());
-        return cosmosContainer.readAllItems(JsonUtils.DEFAULT_PARTITION_KEY, Map.class).stream().count();
+        return cosmosContainer.queryItems(QUERY_SELECT_ALL, null, Map.class).stream().count();
     }
 
 }

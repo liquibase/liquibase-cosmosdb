@@ -39,7 +39,6 @@ import liquibase.util.StringUtil;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.unmodifiableList;
 import static liquibase.plugin.Plugin.PRIORITY_SPECIALIZED;
 
 public class CosmosHistoryService extends AbstractNoSqlHistoryService<CosmosLiquibaseDatabase> {

@@ -57,6 +57,6 @@ class CountDocumentsInContainerStatementIT extends AbstractCosmosWithConnectionI
         final CreateItemStatement createItemStatementId2PartitionDefault
                 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"2\", \"partition\" : \"default\", \"firstName\" : \"FirstName2\", \"age\" : \"99\"}");
         createItemStatementId2PartitionDefault.execute(database);
-        assertThat(countDocumentsInContainerStatement.queryForLong(database)).isEqualTo(2L);
+        assertThat(countDocumentsInContainerStatement.queryForLong(database)).isEqualTo(3L);
     }
 }

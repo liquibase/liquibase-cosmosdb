@@ -39,9 +39,10 @@ import com.fasterxml.jackson.databind.node.ValueNode;
 import lombok.NoArgsConstructor;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import static com.azure.cosmos.implementation.Constants.Properties.AUTOPILOT_MAX_THROUGHPUT;
+import static com.azure.cosmos.implementation.Constants.Properties.ID;
+import static com.azure.cosmos.implementation.Constants.Properties.PATH_SEPARATOR;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static liquibase.util.StringUtil.isNotEmpty;
@@ -52,11 +53,8 @@ import static lombok.AccessLevel.PRIVATE;
 public final class JsonUtils {
     public static final ObjectMapper OBJECT_MAPPER = Utils.getSimpleObjectMapper();
     public static final String DEFAULT_PARTITION_KEY_NAME = "null";
-    public static final String DEFAULT_PARTITION_KEY_PATH = "/" + DEFAULT_PARTITION_KEY_NAME;
-    public static final PartitionKey DEFAULT_PARTITION_KEY = new PartitionKey("default");
-    public static final PartitionKey DEFAULT_PARTITION_KEY_PERSIST = PartitionKey.NONE;
-    public static final String COSMOS_ID_FIELD = "id";
-    public static final String COSMOS_ID_PARAMETER = "@" + COSMOS_ID_FIELD;
+    public static final String DEFAULT_PARTITION_KEY_PATH = PATH_SEPARATOR + DEFAULT_PARTITION_KEY_NAME;
+    public static final String COSMOS_ID_PARAMETER = "@" + ID;
     public static final String QUERY_SELECT_ALL = "SELECT * FROM c";
 
     public static Document orEmptyDocument(final String json) {
@@ -95,10 +93,6 @@ public final class JsonUtils {
                 .map(js -> new CosmosStoredProcedureProperties(
                         js.getString("id"),
                         js.getString("body"))).orElse(new CosmosStoredProcedureProperties(null, null));
-    }
-
-    public static Document fromMap(final Map<?, ?> source) {
-        return Document.fromObject(source, OBJECT_MAPPER);
     }
 
     public static Document mergeDocuments(final Document destination, final Document source) {

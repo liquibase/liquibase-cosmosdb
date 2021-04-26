@@ -24,11 +24,8 @@ import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.implementation.Document;
 import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.models.SqlQuerySpec;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static liquibase.ext.cosmosdb.statement.JsonUtils.extractPartitionKeyByPath;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.extractPartitionKeyPath;
@@ -67,13 +64,10 @@ public class UpdateEachItemStatement extends CreateItemStatement {
 
         final Document source = getDocument();
 
-        final List<Document> documents = cosmosContainer
-                .queryItems(query, null, Map.class).stream().map(JsonUtils::fromMap)
-                .map(Document.class::cast).map(d -> mergeDocuments(d, source))
-                .collect(Collectors.toList());
-
-        documents.forEach(destination -> {
-            mergeDocuments(source, destination);
+        cosmosContainer
+                .queryItems(query, null, ObjectNode.class).stream().map(Document::new)
+                .map(d -> mergeDocuments(d, source))
+                .forEach(destination -> {
             final PartitionKey partitionKey = extractPartitionKeyByPath(destination, partitionKeyPath);
             cosmosContainer.upsertItem(destination, partitionKey, null);
         });
