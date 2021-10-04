@@ -4,7 +4,7 @@
     <groupId>org.liquibase.ext</groupId>
     <artifactId>liquibase-cosmosdb</artifactId>
     <packaging>jar</packaging>
-    <version>4.4.4-SNAPSHOT</version>
+    <version>4.5.0</version>
     <name>Liquibase Cosmos DB Core (SQL) API Extension</name>
     <description>Liquibase extension for Cosmos DB via Core (SQL) API</description>
     <url>http://www.liquibase.org</url>
