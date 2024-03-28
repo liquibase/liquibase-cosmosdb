@@ -11,7 +11,7 @@
     <groupId>org.liquibase.ext</groupId>
     <artifactId>liquibase-cosmosdb</artifactId>
     <packaging>jar</packaging>
-    <version>4.27.0</version>
+    <version>4.28.0-SNAPSHOT</version>
     <name>Liquibase Cosmos DB Core (SQL) API Extension</name>
     <description>Liquibase extension for Cosmos DB via Core (SQL) API</description>
     <url>http://www.liquibase.org</url>
@@ -20,7 +20,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
 		<url>https://github.com/liquibase/liquibase-cosmosdb.git</url>
-		<tag>liquibase-cosmosdb-4.27.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 
     <developers>
