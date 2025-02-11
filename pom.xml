@@ -31,7 +31,7 @@
 
     <properties>
         <liquibase.version>4.31.0</liquibase.version>
-        <azure-cosmos.version>4.66.0</azure-cosmos.version>
+        <azure-cosmos.version>4.66.1</azure-cosmos.version>
         <jupiter.surefire.version>1.3.2</jupiter.surefire.version>
         <mockito-core.version>4.11.0</mockito-core.version>
         <mockito-junit-jupiter.version>4.11.0</mockito-junit-jupiter.version>
