@@ -34,7 +34,7 @@
         <azure-cosmos.version>4.77.0</azure-cosmos.version>
         <jupiter.surefire.version>1.3.2</jupiter.surefire.version>
         <mockito-core.version>4.11.0</mockito-core.version>
-        <mockito-junit-jupiter.version>4.11.0</mockito-junit-jupiter.version>
+        <mockito-junit-jupiter.version>5.21.0</mockito-junit-jupiter.version>
         <hamcrest.version>1.3</hamcrest.version>
         <assertj.version>3.27.7</assertj.version>
         <!-- Override parent POM Jackson version to match Azure Cosmos SDK requirements -->
