@@ -1,9 +1,11 @@
 package liquibase.ext.cosmosdb.database;
 
+import com.azure.core.credential.TokenCredential;
 import com.azure.cosmos.ConnectionMode;
 import com.azure.cosmos.ConsistencyLevel;
 import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosClientBuilder;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import liquibase.Scope;
 import liquibase.exception.DatabaseException;
 import liquibase.util.StringUtil;
@@ -30,11 +32,21 @@ public class CosmosClientDriver implements Driver {
         final Optional<ConnectionMode> connectionMode = cosmosConnectionString.getConnectionMode();
         final CosmosClient client;
         try {
-            final CosmosClientBuilder builder = new CosmosClientBuilder()
-                    .endpoint(cosmosConnectionString.getAccountEndpoint().orElse(""))
-                    .key(cosmosConnectionString.getAccountKey().orElse(""))
-                    .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                    .userAgentSuffix(LIQUIBASE_EXTENSION_USER_AGENT_SUFFIX);
+            final CosmosClientBuilder builder = new CosmosClientBuilder();
+            
+            if (cosmosConnectionString.getUseAzureIdentity().orElse(false)) {
+                DefaultAzureCredentialBuilder credential = new DefaultAzureCredentialBuilder();
+
+                cosmosConnectionString.getUserManagedIdentity()
+                    .ifPresent(credential::managedIdentityClientId);
+                
+                builder.credential(credential.build());
+            } else {
+                builder.endpoint(cosmosConnectionString.getAccountEndpoint().orElse(""))
+                        .key(cosmosConnectionString.getAccountKey().orElse(""))
+                        .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                        .userAgentSuffix(LIQUIBASE_EXTENSION_USER_AGENT_SUFFIX);
+            }
 
             connectionMode.ifPresent(mode -> {
                 switch (mode) {
