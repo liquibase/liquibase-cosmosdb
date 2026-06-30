@@ -21,6 +21,7 @@ public class CosmosConnectionString {
     public static final String ACCOUNT_ENDPOINT_PROPERTY = "accountEndpoint";
     public static final String ACCOUNT_KEY_PROPERTY = "accountKey";
     public static final String DATABASE_NAME_PROPERTY = "databaseName";
+    public static final String USE_AZURE_IDENTITY_PROPERTY = "useAzureIdentity";
 
     public static final String COSMOSDB_PREFIX = "cosmosdb://";
     public static final String COSMOSDB_JSON_PREFIX = COSMOSDB_PREFIX + "{";
@@ -123,6 +124,10 @@ public class CosmosConnectionString {
 
     public Optional<String> getDatabaseName() {
         return getProperty(DATABASE_NAME_PROPERTY);
+    }
+
+    public Optional<String> getUseAzureIdentity() {
+        return getProperty(USE_AZURE_IDENTITY_PROPERTY);
     }
 
 }
