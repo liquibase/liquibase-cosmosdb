@@ -21,7 +21,7 @@ package liquibase.ext.cosmosdb.statement;
  */
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.implementation.ConflictException;
+import com.azure.cosmos.CosmosException;
 import com.azure.cosmos.models.CosmosItemResponse;
 import com.azure.cosmos.models.PartitionKey;
 import liquibase.ext.cosmosdb.AbstractCosmosWithConnectionIntegrationTest;
@@ -60,7 +60,8 @@ class InsertOneStatementIT extends AbstractCosmosWithConnectionIntegrationTest {
         createItemStatementId2Partition2.execute(database);
 
         final CreateItemStatement createItemStatementSameId1SamePartition1 = new CreateItemStatement(CONTAINER_NAME_PERSON, "{\"id\" : \"1\", \"lastName\" : \"LastName1\", \"firstName\" : \"FirstName2\", \"age\" : \"10\"}");
-                assertThatExceptionOfType(ConflictException.class).isThrownBy(() -> createItemStatementSameId1SamePartition1.execute(database));
+                assertThatExceptionOfType(CosmosException.class).isThrownBy(() -> createItemStatementSameId1SamePartition1.execute(database))
+                        .satisfies(e -> assertThat(e.getStatusCode()).isEqualTo(409));
 
         CosmosItemResponse<Map> documentId1Partition1 = cosmosContainer.readItem("1", new PartitionKey("LastName1"), Map.class);
         assertThat(documentId1Partition1.getItem().get("firstName")).isEqualTo("FirstName1");

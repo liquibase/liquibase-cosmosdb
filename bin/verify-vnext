@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+shopt -os errexit nounset pipefail
+shopt -s inherit_errexit
+
+EMULATOR_IMAGE="${EMULATOR_IMAGE:-mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest}"
+EMULATOR_PORT="${EMULATOR_PORT:-8082}"
+CONTAINER_NAME="cosmos-emulator-vnext"
+TRUSTSTORE="${TMPDIR:-/tmp}/cosmos-truststore-vnext.jks"
+TRUSTSTORE_PASSWORD="changeit"
+PROPERTIES_FILE="src/test/resources/application-test.properties"
+PROPERTIES_BACKUP="${TMPDIR:-/tmp}/application-test.properties.bak"
+
+cleanup() {
+    docker stop "${CONTAINER_NAME}" > /dev/null 2>&1 || true
+    docker rm "${CONTAINER_NAME}" > /dev/null 2>&1 || true
+    rm -f "${TRUSTSTORE}"
+    if [[ -f "${PROPERTIES_BACKUP}" ]]; then
+        cp "${PROPERTIES_BACKUP}" "${PROPERTIES_FILE}"
+        rm -f "${PROPERTIES_BACKUP}"
+    fi
+}
+trap cleanup EXIT
+
+docker stop "${CONTAINER_NAME}" > /dev/null 2>&1 || true
+docker rm "${CONTAINER_NAME}" > /dev/null 2>&1 || true
+
+docker pull "${EMULATOR_IMAGE}"
+
+docker run \
+    --detach \
+    --name "${CONTAINER_NAME}" \
+    --publish "${EMULATOR_PORT}:8081" \
+    --env PROTOCOL=https \
+    --env GATEWAY_PUBLIC_ENDPOINT="localhost:${EMULATOR_PORT}" \
+    "${EMULATOR_IMAGE}"
+
+emulator::wait_ready() {
+    local -r timeout=120
+    local elapsed=0
+    until openssl s_client \
+            --connect "localhost:${EMULATOR_PORT}" \
+            --verify_quiet </dev/null > /dev/null 2>&1; do
+        if (( elapsed >= timeout )); then
+            echo "Cosmos emulator did not become ready within ${timeout}s" >&2
+            exit 1
+        fi
+        sleep 2
+        (( elapsed += 2 )) || true
+    done
+}
+
+emulator::wait_ready
+
+emulator::import_cert() {
+    local -r cert_pem="${TMPDIR:-/tmp}/cosmos-emulator-vnext.pem"
+
+    openssl s_client \
+        --connect "localhost:${EMULATOR_PORT}" \
+        --showcerts </dev/null 2>/dev/null \
+        | openssl x509 --outform PEM \
+        > "${cert_pem}"
+
+    keytool \
+        -importcert \
+        -keystore "${TRUSTSTORE}" \
+        -storepass "${TRUSTSTORE_PASSWORD}" \
+        -alias cosmos-emulator-vnext \
+        -file "${cert_pem}" \
+        -noprompt
+
+    rm -f "${cert_pem}"
+}
+
+emulator::import_cert
+
+emulator::patch_connection_uri() {
+    local -r account_key="C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
+    local -r uri="cosmosdb://localhost:${account_key}@localhost:${EMULATOR_PORT}/testdb1?connectionMode=gateway"
+
+    cp "${PROPERTIES_FILE}" "${PROPERTIES_BACKUP}"
+    sed "s|^db\.connection\.uri=.*|db.connection.uri=${uri}|" "${PROPERTIES_BACKUP}" > "${PROPERTIES_FILE}"
+}
+
+emulator::patch_connection_uri
+
+mvn clean install \
+    --define javax.net.ssl.trustStore="${TRUSTSTORE}" \
+    --define javax.net.ssl.trustStorePassword="${TRUSTSTORE_PASSWORD}" \
+    --define liquibase.cosmosdb.inferPartitionKeyKind=true

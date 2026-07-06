@@ -1,5 +1,7 @@
 package liquibase.ext.cosmosdb.database;
 
+import com.azure.cosmos.ConnectionMode;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -86,6 +88,10 @@ class CosmosConnectionStringTest {
         assertThat(fromJsonConnectionString("cosmosdb://{\"databaseName\" : \"db1\"}").getProperty(CosmosConnectionString.DATABASE_NAME_PROPERTY)).hasValue("db1");
         assertThat(fromJsonConnectionString("cosmosdb://{\"databaseName\" : \"db1\"}").getDatabaseName()).hasValue("db1");
 
+        assertThat(fromJsonConnectionString("cosmosdb://{\"connectionMode\" : \"gateway\"}").getProperty(CosmosConnectionString.CONNECTION_MODE_PROPERTY)).hasValue("gateway");
+        assertThat(fromJsonConnectionString("cosmosdb://{\"connectionMode\" : \"gateway\"}").getConnectionMode()).hasValue(ConnectionMode.GATEWAY);
+        assertThat(fromJsonConnectionString("cosmosdb://{}").getConnectionMode()).isNotPresent();
+
         final CosmosConnectionString cosmosConnectionString
                 = fromJsonConnectionString("cosmosdb://{\"accountEndpoint\" : \"http://localhost:8080/\", \"accountKey\" : \"key\", \"databaseName\" : \"db1\"}");
         assertThat(cosmosConnectionString.getAccountEndpoint()).hasValue("http://localhost:8080/");
@@ -109,6 +115,10 @@ class CosmosConnectionStringTest {
         assertThat(fromUrlConnectionString("cosmosdb://localhost:key@localhost:8080/db1?accountKey=key").getProperty(CosmosConnectionString.DATABASE_NAME_PROPERTY)).hasValue("db1");
         assertThat(fromUrlConnectionString("cosmosdb://localhost:key@localhost:8080/db1?accountKey=key").getDatabaseName()).hasValue("db1");
 
+        assertThat(fromUrlConnectionString("cosmosdb://localhost:key@localhost:8080/db?connectionMode=gateway").getProperty(CosmosConnectionString.CONNECTION_MODE_PROPERTY)).hasValue("gateway");
+        assertThat(fromUrlConnectionString("cosmosdb://localhost:key@localhost:8080/db?connectionMode=gateway").getConnectionMode()).hasValue(ConnectionMode.GATEWAY);
+        assertThat(fromUrlConnectionString("cosmosdb://localhost:key@localhost:8080/db").getConnectionMode()).isNotPresent();
+
         final CosmosConnectionString cosmosConnectionString
                 = fromUrlConnectionString("cosmosdb://localhost:key@localhost:8080/db1?accountKey=key");
         assertThat(cosmosConnectionString.getAccountEndpoint()).hasValue("https://localhost:8080");
@@ -127,6 +137,32 @@ class CosmosConnectionStringTest {
         assertThat(cosmosConnectionString.getDatabaseName()).hasValue("db1");
         assertThat(cosmosConnectionString.getProperty("any")).isNotPresent();
         assertThat(cosmosConnectionString.toUrl()).isEqualTo("cosmosdb://{\"accountEndpoint\":\"http://localhost:8080/\",\"databaseName\":\"db1\",\"accountKey\":\"*****\"}");
+    }
+
+    @Nested
+    class when_getConnectionMode_is_invoked {
+        @Test
+        void given_no_connectionMode_then_empty_is_returned() {
+            assertThat(fromJsonConnectionString("cosmosdb://{}").getConnectionMode()).isNotPresent();
+        }
+
+        @Test
+        void given_gateway_in_any_case_then_GATEWAY_is_returned() {
+            assertThat(fromJsonConnectionString("cosmosdb://{\"connectionMode\" : \"gateway\"}").getConnectionMode()).hasValue(ConnectionMode.GATEWAY);
+            assertThat(fromJsonConnectionString("cosmosdb://{\"connectionMode\" : \"GATEWAY\"}").getConnectionMode()).hasValue(ConnectionMode.GATEWAY);
+            assertThat(fromJsonConnectionString("cosmosdb://{\"connectionMode\" : \"Gateway\"}").getConnectionMode()).hasValue(ConnectionMode.GATEWAY);
+        }
+
+        @Test
+        void given_direct_then_DIRECT_is_returned() {
+            assertThat(fromJsonConnectionString("cosmosdb://{\"connectionMode\" : \"direct\"}").getConnectionMode()).hasValue(ConnectionMode.DIRECT);
+        }
+
+        @Test
+        void given_an_invalid_value_then_an_IllegalArgumentException_is_thrown() {
+            assertThatIllegalArgumentException().isThrownBy(
+                    () -> fromJsonConnectionString("cosmosdb://{\"connectionMode\" : \"bogus\"}").getConnectionMode());
+        }
     }
 
     @Test

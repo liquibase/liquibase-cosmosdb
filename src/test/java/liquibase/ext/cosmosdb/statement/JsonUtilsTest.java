@@ -21,14 +21,17 @@ package liquibase.ext.cosmosdb.statement;
  */
 
 import com.azure.cosmos.implementation.Document;
+import com.azure.cosmos.models.PartitionKind;
 import com.azure.cosmos.models.SqlQuerySpec;
 import com.azure.cosmos.models.ThroughputProperties;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static liquibase.ext.cosmosdb.statement.JsonUtils.DEFAULT_PARTITION_KEY_PATH;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.mergeDocuments;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.orEmptyDocument;
+import static liquibase.ext.cosmosdb.statement.JsonUtils.toContainerProperties;
 import static liquibase.ext.cosmosdb.statement.JsonUtils.toThroughputProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -203,6 +206,76 @@ class JsonUtilsTest {
                 .hasFieldOrPropertyWithValue("City", null);
         assertThat(source.get("DestinationOnly")).isNull();
         assertThat(source.get("SourceOnly")).isEqualTo(true);
+    }
+
+    @Test
+    void testToContainerPropertiesInfersSinglePathKindAsHashWhenEnabled() {
+        final String containerProperties = "{\"partitionKey\": {\"paths\": [\"/myKey\"]}}";
+
+        assertThat(toContainerProperties("aContainer", containerProperties, true).getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(PartitionKind.HASH, pk -> pk.getKind());
+    }
+
+    @Test
+    void testToContainerPropertiesInfersMultiPathKindAsMultiHashWhenEnabled() {
+        final String containerProperties = "{\"partitionKey\": {\"paths\": [\"/tenantId\", \"/userId\"]}}";
+
+        assertThat(toContainerProperties("aContainer", containerProperties, true).getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(PartitionKind.MULTI_HASH, pk -> pk.getKind());
+    }
+
+    @Test
+    void testToContainerPropertiesLeavesSinglePathKindUnsetWhenInferenceDisabled() {
+        final String containerProperties = "{\"partitionKey\": {\"paths\": [\"/myKey\"]}}";
+
+        assertThat(toContainerProperties("aContainer", containerProperties, false).getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(null, pk -> pk.getKind())
+                .satisfies(pk -> assertThat(pk.getPaths()).containsExactly("/myKey"));
+    }
+
+    @Test
+    void testToContainerPropertiesLeavesMultiPathKindUnsetWhenInferenceDisabled() {
+        final String containerProperties = "{\"partitionKey\": {\"paths\": [\"/tenantId\", \"/userId\"]}}";
+
+        assertThat(toContainerProperties("aContainer", containerProperties, false).getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(null, pk -> pk.getKind())
+                .satisfies(pk -> assertThat(pk.getPaths()).containsExactly("/tenantId", "/userId"));
+    }
+
+    @Test
+    void testToContainerPropertiesPreservesExplicitKindWhenInferenceEnabled() {
+        final String containerProperties = "{\"partitionKey\": {\"paths\": [\"/myKey\"], \"kind\": \"Range\"}}";
+
+        assertThat(toContainerProperties("aContainer", containerProperties, true).getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(PartitionKind.RANGE, pk -> pk.getKind());
+    }
+
+    @Test
+    void testToContainerPropertiesEmptyPropertiesKeepsConstructorHashKind() {
+        assertThat(toContainerProperties("aContainer", null, false).getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(PartitionKind.HASH, pk -> pk.getKind());
+    }
+
+    @Test
+    void testToContainerPropertiesKeepsDefaultPathWhenPartitionKeyOmitted() {
+        assertThat(toContainerProperties("aContainer", "{\"defaultTtl\": 100}", false).getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(PartitionKind.HASH, pk -> pk.getKind())
+                .satisfies(pk -> assertThat(pk.getPaths()).containsExactly(DEFAULT_PARTITION_KEY_PATH));
+    }
+
+    @Test
+    void testToContainerPropertiesKeepsDefaultPathWhenPathsEmpty() {
+        assertThat(toContainerProperties("aContainer", "{\"partitionKey\": {\"paths\": []}}", false).getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(PartitionKind.HASH, pk -> pk.getKind())
+                .satisfies(pk -> assertThat(pk.getPaths()).containsExactly(DEFAULT_PARTITION_KEY_PATH));
     }
 
     @Test

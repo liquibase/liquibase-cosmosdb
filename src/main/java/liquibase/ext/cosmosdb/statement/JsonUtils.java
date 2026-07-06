@@ -28,6 +28,8 @@ import com.azure.cosmos.implementation.Utils;
 import com.azure.cosmos.models.CosmosContainerProperties;
 import com.azure.cosmos.models.CosmosStoredProcedureProperties;
 import com.azure.cosmos.models.PartitionKey;
+import com.azure.cosmos.models.PartitionKeyDefinition;
+import com.azure.cosmos.models.PartitionKind;
 import com.azure.cosmos.models.SqlParameter;
 import com.azure.cosmos.models.SqlQuerySpec;
 import com.azure.cosmos.models.ThroughputProperties;
@@ -39,10 +41,12 @@ import com.fasterxml.jackson.databind.node.ValueNode;
 import lombok.NoArgsConstructor;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static com.azure.cosmos.implementation.Constants.Properties.AUTOPILOT_MAX_THROUGHPUT;
 import static com.azure.cosmos.implementation.Constants.Properties.ID;
 import static com.azure.cosmos.implementation.Constants.Properties.PATH_SEPARATOR;
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static liquibase.util.StringUtil.isNotEmpty;
@@ -100,13 +104,22 @@ public final class JsonUtils {
         return destination;
     }
 
-    public static CosmosContainerProperties toContainerProperties(final String containerId, final String containerPropertiesJson) {
+    public static CosmosContainerProperties toContainerProperties(final String containerId, final String containerPropertiesJson, final boolean inferPartitionKeyKind) {
 
         final CosmosContainerProperties cosmosContainerProperties = new CosmosContainerProperties(containerId, DEFAULT_PARTITION_KEY_PATH);
         if (isNotEmpty(trimToNull(containerPropertiesJson))) {
             final DocumentCollection documentCollection = new DocumentCollection(containerPropertiesJson);
-            if (nonNull(documentCollection.getPartitionKey())) {
-                cosmosContainerProperties.setPartitionKeyDefinition(documentCollection.getPartitionKey());
+
+            final PartitionKeyDefinition partitionKeyDefinition = documentCollection.getPartitionKey();
+            final List<String> suppliedPartitionKeyPaths = partitionKeyDefinition.getPaths();
+            final boolean partitionKeyPathsSupplied = nonNull(suppliedPartitionKeyPaths) && !suppliedPartitionKeyPaths.isEmpty();
+            if (partitionKeyPathsSupplied) {
+                if (inferPartitionKeyKind && isNull(partitionKeyDefinition.getKind())) {
+                    final PartitionKind inferredPartitionKind = suppliedPartitionKeyPaths.size() > 1 ? PartitionKind.MULTI_HASH : PartitionKind.HASH;
+                    partitionKeyDefinition.setKind(inferredPartitionKind);
+                }
+
+                cosmosContainerProperties.setPartitionKeyDefinition(partitionKeyDefinition);
             }
             if (nonNull(documentCollection.getIndexingPolicy())) {
                 cosmosContainerProperties.setIndexingPolicy(documentCollection.getIndexingPolicy());

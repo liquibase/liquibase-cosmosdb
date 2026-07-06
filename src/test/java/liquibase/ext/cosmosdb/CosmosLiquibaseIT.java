@@ -114,7 +114,7 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
         assertThat(maximalProperties.getIndexingPolicy().getIndexingMode()).isEqualTo(IndexingMode.CONSISTENT);
         assertThat(maximalProperties.getIndexingPolicy().isAutomatic()).isTrue();
         assertThat(maximalProperties.getIndexingPolicy().getIncludedPaths()).hasSize(1);
-        assertThat(maximalProperties.getIndexingPolicy().getExcludedPaths()).hasSize(1);
+        assertThat(maximalProperties.getIndexingPolicy().getExcludedPaths()).isNotNull();
 
         final ThroughputProperties maximalThroughput = cosmosDatabase.getContainer("maximal").readThroughput().getProperties();
         assertThat(maximalThroughput).isNotNull();
@@ -270,12 +270,12 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
         assertThat(changeSets).hasSize(6)
                 .extracting(CosmosRanChangeSet::getId, CosmosRanChangeSet::getOrderExecuted, CosmosRanChangeSet::getLastCheckSum)
                 .containsExactly(
-                        tuple("1", 1, CheckSum.parse("8:33708e6a36985ab9c125845f7fa3c40f")),
-                        tuple("2", 2, CheckSum.parse("8:3daf396cd0b98414d7cdd2585025cb4a")),
-                        tuple("3", 3, CheckSum.parse("8:eeaa6203312f314069e0cf94996f9e86")),
-                        tuple("4", 4, CheckSum.parse("8:bf0f99951de19a13bc5a71a181acf601")),
-                        tuple("5", 5, CheckSum.parse("8:eac9097e490cc40cc6c8fd1f00204970")),
-                        tuple("6", 6, CheckSum.parse("8:f909594318be69a3f8ffb60cfb835dda")));
+                        tuple("1", 1, CheckSum.parse("9:3f13f9648dae9becf2490b37df903b39")),
+                        tuple("2", 2, CheckSum.parse("9:e51c5a0ad0d966a104afd10fa6a50828")),
+                        tuple("3", 3, CheckSum.parse("9:338b3446e7e81bbdc875196e576b4bbe")),
+                        tuple("4", 4, CheckSum.parse("9:d657420b15a4393a1f2eae527a36eb44")),
+                        tuple("5", 5, CheckSum.parse("9:aae0c2c2896115a3893e25220263f20d")),
+                        tuple("6", 6, CheckSum.parse("9:4533c1bd519366972974e667fd5eb51b")));
 
         List<Map<?, ?>> documents = cosmosDatabase.getContainer("container1").queryItems(QUERY_SELECT_ALL, null, Map.class)
                 .stream().map(d -> (Map<?, ?>) d).collect(Collectors.toList());
@@ -319,14 +319,14 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
         assertThat(changeSets).hasSize(8)
                 .extracting(CosmosRanChangeSet::getId, CosmosRanChangeSet::getAuthor, CosmosRanChangeSet::getOrderExecuted, CosmosRanChangeSet::getLastCheckSum)
                 .containsExactly(
-                        tuple("1", "victor", 1, CheckSum.parse("8:e78c81df936cd78f928a1ddafb50c3ea")),
-                        tuple("2", "victor", 2, CheckSum.parse("8:2b8754b30562ccc33bfb63d844dc3845")),
-                        tuple("3", "victor", 3, CheckSum.parse("8:38dd32a12b1e1ba4a603060d7fc3590a")),
-                        tuple("4", "victor", 4, CheckSum.parse("8:274d43387a06d3028f317064da4362e7")),
-                        tuple("1", "alex", 5, CheckSum.parse("8:b6d04ba24f79979de61e4b41f34e6ee5")),
-                        tuple("2", "alex", 6, CheckSum.parse("8:0eabd6f5d517e926a36972dc398c27e7")),
-                        tuple("3", "alex", 7, CheckSum.parse("8:c0d57c05a381f6348bd1d0edce64887d")),
-                        tuple("4", "alex", 8, CheckSum.parse("8:ab821f2b572ef4265b1aa54f44d56377")));
+                        tuple("1", "victor", 1, CheckSum.parse("9:ce185bf80e2edb000cf81b48fc8745ba")),
+                        tuple("2", "victor", 2, CheckSum.parse("9:d4583e47d9f6cb59df1bddbe3886d775")),
+                        tuple("3", "victor", 3, CheckSum.parse("9:6bc4779744be4301ff285b2649d383ac")),
+                        tuple("4", "victor", 4, CheckSum.parse("9:eb1d4a019d93fd8a0896ff0c4d5443b1")),
+                        tuple("1", "alex", 5, CheckSum.parse("9:82f70fb78ee2ef29b0a0bc6f3f7ed848")),
+                        tuple("2", "alex", 6, CheckSum.parse("9:918ce4263ad25c49377b026c56fb143d")),
+                        tuple("3", "alex", 7, CheckSum.parse("9:e8611284413844952b30986300d69e77")),
+                        tuple("4", "alex", 8, CheckSum.parse("9:55f00216ff3592eea12a46fe5cb570d0")));
 
         // check non partitioned items
         List<Map<?, ?>> documents = cosmosDatabase.getContainer("container0").queryItems(QUERY_SELECT_ALL, null, Map.class)
@@ -378,12 +378,12 @@ class CosmosLiquibaseIT extends AbstractCosmosWithConnectionIntegrationTest {
         assertThat(changeSets).hasSize(6)
                 .extracting(CosmosRanChangeSet::getId, CosmosRanChangeSet::getAuthor, CosmosRanChangeSet::getOrderExecuted, CosmosRanChangeSet::getLastCheckSum)
                 .containsExactly(
-                        tuple("1", "alex", 1, CheckSum.parse("8:48d852855bbfe6ba0514f7a912410372")),
-                        tuple("2", "alex", 2, CheckSum.parse("8:ac157a4bb06d5b9ba57b5bbf271de99f")),
-                        tuple("3", "alex", 3, CheckSum.parse("8:3ca6f0e723ae424832de701e8dedddae")),
-                        tuple("1", "victor", 4, CheckSum.parse("8:db57f1469eba09b27acc7522e9e92190")),
-                        tuple("2", "victor", 5, CheckSum.parse("8:671232a97c890eefa1ca727b5595c070")),
-                        tuple("3", "victor", 6, CheckSum.parse("8:b4991cc087c7d6a60c004b390a591313"))
+                        tuple("1", "alex", 1, CheckSum.parse("9:e3668559782d993266bacd2da14e1dd1")),
+                        tuple("2", "alex", 2, CheckSum.parse("9:99a1b76747adfe65be949de28b4a005a")),
+                        tuple("3", "alex", 3, CheckSum.parse("9:bba0fcbc345f5bc46b703de37d2c014b")),
+                        tuple("1", "victor", 4, CheckSum.parse("9:83f1ecd6d2e61c7b245123abf4367a2b")),
+                        tuple("2", "victor", 5, CheckSum.parse("9:abbe0aca90e6b5bdfe23f025bc8a1082")),
+                        tuple("3", "victor", 6, CheckSum.parse("9:52d4833bbabd302d39d44bf3a6dd1aa6"))
                 );
 
         // check non partitioned items

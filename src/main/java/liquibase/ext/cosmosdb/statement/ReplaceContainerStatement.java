@@ -22,6 +22,7 @@ package liquibase.ext.cosmosdb.statement;
 
 import com.azure.cosmos.models.CosmosContainerProperties;
 import com.azure.cosmos.models.ThroughputProperties;
+import liquibase.ext.cosmosdb.CosmosConfiguration;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -51,7 +52,8 @@ public class ReplaceContainerStatement extends CreateContainerStatement {
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
         if (nonNull(trimToNull(getContainerProperties()))) {
-            final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerId(), getContainerProperties());
+            final boolean inferPartitionKeyKind = CosmosConfiguration.INFER_PARTITION_KEY_KIND.getCurrentValue();
+            final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerId(), getContainerProperties(), inferPartitionKeyKind);
             database.getCosmosDatabase().getContainer(getContainerId()).replace(cosmosContainerProperties);
         }
         if (nonNull(trimToNull(getThroughputProperties()))) {
