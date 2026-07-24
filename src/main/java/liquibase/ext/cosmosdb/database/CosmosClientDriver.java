@@ -1,8 +1,10 @@
 package liquibase.ext.cosmosdb.database;
 
+import com.azure.core.credential.TokenCredential;
 import com.azure.cosmos.ConsistencyLevel;
 import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosClientBuilder;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import liquibase.Scope;
 import liquibase.exception.DatabaseException;
 import liquibase.util.StringUtil;
@@ -27,12 +29,18 @@ public class CosmosClientDriver implements Driver {
     public CosmosClientProxy connect(final CosmosConnectionString cosmosConnectionString) throws DatabaseException {
         final CosmosClient client;
         try {
-            client = new CosmosClientBuilder()
-                    .endpoint(cosmosConnectionString.getAccountEndpoint().orElse(""))
-                    .key(cosmosConnectionString.getAccountKey().orElse(""))
-                    .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                    .userAgentSuffix(LIQUIBASE_EXTENSION_USER_AGENT_SUFFIX)
-                    .buildClient();
+            if (cosmosConnectionString.getUseAzureIdentity().orElse("").equals("true")) {
+                TokenCredential credential = new DefaultAzureCredentialBuilder()
+                        .build();
+                client = new CosmosClientBuilder().credential(credential).buildClient();
+            } else {
+                client = new CosmosClientBuilder()
+                        .endpoint(cosmosConnectionString.getAccountEndpoint().orElse(""))
+                        .key(cosmosConnectionString.getAccountKey().orElse(""))
+                        .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                        .userAgentSuffix(LIQUIBASE_EXTENSION_USER_AGENT_SUFFIX)
+                        .buildClient();
+            }
         } catch (final Exception e) {
             final String message = String.format(
                     "Connection could not be established to endpoint: %s, database: %s",
