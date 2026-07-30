@@ -1,5 +1,6 @@
 package liquibase.ext.cosmosdb.database;
 
+import com.azure.cosmos.ConnectionMode;
 import com.azure.cosmos.ConsistencyLevel;
 import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosClientBuilder;
@@ -10,6 +11,7 @@ import liquibase.util.StringUtil;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -25,6 +27,7 @@ public class CosmosClientDriver implements Driver {
     }
 
     public CosmosClientProxy connect(final CosmosConnectionString cosmosConnectionString) throws DatabaseException {
+        final Optional<ConnectionMode> connectionMode = cosmosConnectionString.getConnectionMode();
         final CosmosClient client;
         try {
             final CosmosClientBuilder builder = new CosmosClientBuilder()
@@ -33,7 +36,7 @@ public class CosmosClientDriver implements Driver {
                     .consistencyLevel(ConsistencyLevel.EVENTUAL)
                     .userAgentSuffix(LIQUIBASE_EXTENSION_USER_AGENT_SUFFIX);
 
-            cosmosConnectionString.getConnectionMode().ifPresent(mode -> {
+            connectionMode.ifPresent(mode -> {
                 switch (mode) {
                     case DIRECT -> builder.directMode();
                     case GATEWAY -> builder.gatewayMode();

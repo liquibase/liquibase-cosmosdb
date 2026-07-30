@@ -3,9 +3,13 @@ package liquibase.ext.cosmosdb.statement;
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.CosmosException;
 import com.azure.cosmos.models.PartitionKind;
+import liquibase.Scope;
 import liquibase.ext.cosmosdb.AbstractCosmosWithConnectionIntegrationTest;
-import org.junit.jupiter.api.Tag;
+import liquibase.ext.cosmosdb.CosmosConfiguration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+
+import java.util.Collections;
 
 import static liquibase.ext.cosmosdb.statement.JsonUtils.DEFAULT_PARTITION_KEY_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,8 +74,9 @@ class CreateContainerStatementIT extends AbstractCosmosWithConnectionIntegration
     }
 
     @Test
-    void testExecuteDefaultsSinglePathKindToHash() {
-        new CreateContainerStatement("container_single_no_kind", PARTITION_KEY_NO_KIND).execute(database);
+    void testExecuteDefaultsSinglePathKindToHash() throws Exception {
+        Scope.child(Collections.singletonMap(CosmosConfiguration.INFER_PARTITION_KEY_KIND.getKey(), true),
+                () -> new CreateContainerStatement("container_single_no_kind", PARTITION_KEY_NO_KIND).execute(database));
 
         final CosmosContainer cosmosContainer = cosmosDatabase.getContainer("container_single_no_kind");
         assertThat(cosmosContainer.read().getProperties().getPartitionKeyDefinition())
@@ -80,10 +85,11 @@ class CreateContainerStatementIT extends AbstractCosmosWithConnectionIntegration
                 .satisfies(pk -> assertThat(pk.getPaths()).containsExactly("/partitionField1"));
     }
 
-    @Tag("cosmos-supports-multihash-partition-keys")
+    @EnabledIfSystemProperty(named = "cosmos-supports-multihash-partition-keys", matches = "true")
     @Test
-    void testExecuteDefaultsMultiPathKindToMultiHash() {
-        new CreateContainerStatement("container_multi_no_kind", PARTITION_KEY_MULTI_NO_KIND).execute(database);
+    void testExecuteDefaultsMultiPathKindToMultiHash() throws Exception {
+        Scope.child(Collections.singletonMap(CosmosConfiguration.INFER_PARTITION_KEY_KIND.getKey(), true),
+                () -> new CreateContainerStatement("container_multi_no_kind", PARTITION_KEY_MULTI_NO_KIND).execute(database));
 
         final CosmosContainer cosmosContainer = cosmosDatabase.getContainer("container_multi_no_kind");
         assertThat(cosmosContainer.read().getProperties().getPartitionKeyDefinition())

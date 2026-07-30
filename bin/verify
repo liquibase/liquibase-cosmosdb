@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 shopt -os errexit nounset pipefail
-shopt -s inherit_errexit
+shopt -s inherit_errexit 2>/dev/null || true
 
 EMULATOR_IMAGE="${EMULATOR_IMAGE:-mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:stable}"
 EMULATOR_PORT="${EMULATOR_PORT:-8081}"
@@ -30,8 +30,8 @@ emulator::wait_ready() {
     local -r timeout=120
     local elapsed=0
     until openssl s_client \
-            --connect "localhost:${EMULATOR_PORT}" \
-            --verify_quiet </dev/null > /dev/null 2>&1; do
+            -connect "localhost:${EMULATOR_PORT}" \
+            -verify_quiet </dev/null > /dev/null 2>&1; do
         if (( elapsed >= timeout )); then
             echo "Cosmos emulator did not become ready within ${timeout}s" >&2
             exit 1
@@ -47,9 +47,9 @@ emulator::import_cert() {
     local -r cert_pem="${TMPDIR:-/tmp}/cosmos-emulator.pem"
 
     openssl s_client \
-        --connect "localhost:${EMULATOR_PORT}" \
-        --showcerts </dev/null 2>/dev/null \
-        | openssl x509 --outform PEM \
+        -connect "localhost:${EMULATOR_PORT}" \
+        -showcerts </dev/null 2>/dev/null \
+        | openssl x509 -outform PEM \
         > "${cert_pem}"
 
     keytool \
@@ -66,6 +66,5 @@ emulator::import_cert() {
 emulator::import_cert
 
 mvn clean install \
-    --define excludedGroups=cosmos-supports-multihash-partition-keys \
     --define javax.net.ssl.trustStore="${TRUSTSTORE}" \
     --define javax.net.ssl.trustStorePassword="${TRUSTSTORE_PASSWORD}"

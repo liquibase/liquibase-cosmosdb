@@ -52,6 +52,12 @@ public final class TestUtils {
     public static Properties loadProperties(final String propertyFile) {
         final Properties properties = new Properties();
         properties.load(TestUtils.class.getClassLoader().getResourceAsStream(propertyFile));
+
+        final String connectionUriOverride = System.getProperty(DB_CONNECTION_URI_PROPERTY);
+        if (connectionUriOverride != null) {
+            properties.setProperty(DB_CONNECTION_URI_PROPERTY, connectionUriOverride);
+        }
+
         return properties;
     }
 
