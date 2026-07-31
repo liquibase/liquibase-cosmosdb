@@ -1,5 +1,6 @@
 package liquibase.ext.cosmosdb.database;
 
+import com.azure.cosmos.ConnectionMode;
 import com.azure.cosmos.ConsistencyLevel;
 import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosClientBuilder;
@@ -10,6 +11,7 @@ import liquibase.util.StringUtil;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -25,14 +27,23 @@ public class CosmosClientDriver implements Driver {
     }
 
     public CosmosClientProxy connect(final CosmosConnectionString cosmosConnectionString) throws DatabaseException {
+        final Optional<ConnectionMode> connectionMode = cosmosConnectionString.getConnectionMode();
         final CosmosClient client;
         try {
-            client = new CosmosClientBuilder()
+            final CosmosClientBuilder builder = new CosmosClientBuilder()
                     .endpoint(cosmosConnectionString.getAccountEndpoint().orElse(""))
                     .key(cosmosConnectionString.getAccountKey().orElse(""))
                     .consistencyLevel(ConsistencyLevel.EVENTUAL)
-                    .userAgentSuffix(LIQUIBASE_EXTENSION_USER_AGENT_SUFFIX)
-                    .buildClient();
+                    .userAgentSuffix(LIQUIBASE_EXTENSION_USER_AGENT_SUFFIX);
+
+            connectionMode.ifPresent(mode -> {
+                switch (mode) {
+                    case DIRECT -> builder.directMode();
+                    case GATEWAY -> builder.gatewayMode();
+                }
+            });
+
+            client = builder.buildClient();
         } catch (final Exception e) {
             final String message = String.format(
                     "Connection could not be established to endpoint: %s, database: %s",

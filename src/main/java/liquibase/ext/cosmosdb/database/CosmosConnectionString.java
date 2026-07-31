@@ -1,8 +1,8 @@
 package liquibase.ext.cosmosdb.database;
 
 import com.azure.core.util.UrlBuilder;
+import com.azure.cosmos.ConnectionMode;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import liquibase.database.jvm.JdbcConnection;
 import liquibase.util.StringUtil;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,6 +10,7 @@ import lombok.Getter;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,6 +22,7 @@ public class CosmosConnectionString {
     public static final String ACCOUNT_ENDPOINT_PROPERTY = "accountEndpoint";
     public static final String ACCOUNT_KEY_PROPERTY = "accountKey";
     public static final String DATABASE_NAME_PROPERTY = "databaseName";
+    public static final String CONNECTION_MODE_PROPERTY = "connectionMode";
 
     public static final String COSMOSDB_PREFIX = "cosmosdb://";
     public static final String COSMOSDB_JSON_PREFIX = COSMOSDB_PREFIX + "{";
@@ -125,4 +127,15 @@ public class CosmosConnectionString {
         return getProperty(DATABASE_NAME_PROPERTY);
     }
 
+    public Optional<ConnectionMode> getConnectionMode() {
+        return getProperty(CONNECTION_MODE_PROPERTY)
+                .map(StringUtil::trimToNull)
+                .map(value -> {
+                    try {
+                        return ConnectionMode.valueOf(value.toUpperCase(Locale.ROOT));
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("Invalid connectionMode: '" + value + "'. Valid values are: gateway, direct.", e);
+                    }
+                });
+    }
 }

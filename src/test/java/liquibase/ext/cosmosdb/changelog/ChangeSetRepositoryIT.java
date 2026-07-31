@@ -1,7 +1,7 @@
 package liquibase.ext.cosmosdb.changelog;
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.implementation.BadRequestException;
+import com.azure.cosmos.CosmosException;
 import liquibase.ContextExpression;
 import liquibase.Labels;
 import liquibase.change.CheckSum;
@@ -95,7 +95,8 @@ class ChangeSetRepositoryIT extends AbstractCosmosWithConnectionIntegrationTest 
     @Test
     void testGet() {
         //missing id
-        assertThatExceptionOfType(BadRequestException.class).isThrownBy(() -> repository.create(minimal));
+        assertThatExceptionOfType(CosmosException.class).isThrownBy(() -> repository.create(minimal))
+                .satisfies(e -> assertThat(e.getStatusCode()).isEqualTo(400));
         assertThat(repository.get(UUID_1)).isEmpty();
         minimal.setUuid(UUID_1);
         final int rowsAffected1 = repository.create(minimal);
@@ -150,7 +151,8 @@ class ChangeSetRepositoryIT extends AbstractCosmosWithConnectionIntegrationTest 
     @Test
     void testCreate() {
         //missing id
-        assertThatExceptionOfType(BadRequestException.class).isThrownBy(() -> repository.create(minimal));
+        assertThatExceptionOfType(CosmosException.class).isThrownBy(() -> repository.create(minimal))
+                .satisfies(e -> assertThat(e.getStatusCode()).isEqualTo(400));
         assertThat(repository.get(UUID_1)).isNotPresent();
         minimal.setUuid(UUID_1);
         int rowsAffected1 = repository.create(minimal);

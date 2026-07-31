@@ -22,6 +22,7 @@ package liquibase.ext.cosmosdb.statement;
 
 import com.azure.cosmos.models.CosmosContainerProperties;
 import com.azure.cosmos.models.ThroughputProperties;
+import liquibase.ext.cosmosdb.CosmosConfiguration;
 import liquibase.ext.cosmosdb.database.CosmosLiquibaseDatabase;
 import liquibase.nosql.statement.NoSqlExecuteStatement;
 import lombok.AllArgsConstructor;
@@ -85,7 +86,8 @@ public class CreateContainerStatement extends AbstractCosmosStatement
 
     @Override
     public void execute(final CosmosLiquibaseDatabase database) {
-        final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerId(), getContainerProperties());
+        final boolean inferPartitionKeyKind = CosmosConfiguration.INFER_PARTITION_KEY_KIND.getCurrentValue();
+        final CosmosContainerProperties cosmosContainerProperties = toContainerProperties(getContainerId(), getContainerProperties(), inferPartitionKeyKind);
         final ThroughputProperties cosmosThroughputProperties = toThroughputProperties(getThroughputProperties());
         if (ofNullable(skipExisting).orElse(FALSE)) {
             database.getCosmosDatabase().createContainerIfNotExists(cosmosContainerProperties, cosmosThroughputProperties);

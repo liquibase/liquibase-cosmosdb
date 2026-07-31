@@ -43,5 +43,13 @@ class CosmosClientDriverTest {
             final DatabaseException databaseException = assertThrows(DatabaseException.class, () -> cosmosClientDriver.connect(cosmosConnectionString));
             assertThat(databaseException).hasMessageNotContaining(MASTER_KEY);
         }
+
+        @Test
+        void given_an_invalid_connectionMode_then_an_IllegalArgumentException_naming_the_bad_value_is_thrown() {
+            final CosmosConnectionString cosmosConnectionString = CosmosConnectionString.fromJsonConnectionString(
+                    "cosmosdb://{\"accountEndpoint\" : \"https://localhost:8080\", \"accountKey\" : \"key\", \"databaseName\" : \"db1\", \"connectionMode\" : \"bogus\"}");
+            final IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> cosmosClientDriver.connect(cosmosConnectionString));
+            assertThat(illegalArgumentException).hasMessage("Invalid connectionMode: 'bogus'. Valid values are: gateway, direct.");
+        }
     }
 }

@@ -66,7 +66,7 @@ public abstract class AbstractRepository<T> {
     }
 
     public int upsert(Map<String, Object> document) {
-        container.upsertItem(document, null);
+        container.upsertItem(document, PartitionKey.NONE, null);
         return 1;
     }
 

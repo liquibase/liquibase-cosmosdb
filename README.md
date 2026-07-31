@@ -7,6 +7,7 @@
 1. [Introduction](#introduction)
 1. [Implemented Changes](#implemented-changes)
 1. [Getting Started](#getting-started)
+1. [Configuration](#configuration)
 1. [Running tests](#running-tests)
 1. [Integration](#integration)
 1. [Contributing](#contributing)
@@ -148,6 +149,29 @@ mvn -Djavax.net.ssl.trustStore="<path_to_certs>\cacerts.jks" -Djavax.net.ssl.tru
 * Clone the project
 * [Run tests](#running-tests)
 
+<a name="configuration"></a>
+## Configuration
+
+This extension reads the following [Liquibase
+configuration](https://docs.liquibase.com/concepts/connections/creating-config-properties.html)
+option. Like any Liquibase setting it can be supplied as an environment
+variable, a JVM system property, a CLI argument, or an entry in
+`liquibase.properties`.
+
+| Key                                        | Environment variable                          | Default | Description                                                 |
+|--------------------------------------------|-----------------------------------------------|---------|-------------------------------------------------------------|
+| `liquibase.cosmosdb.inferPartitionKeyKind` | `LIQUIBASE_COSMOSDB_INFER_PARTITION_KEY_KIND` | `false` | Infer `Hash`/`MultiHash` for an omitted partition key kind. |
+
+### Why `inferPartitionKeyKind` exists
+
+It defaults to `false` to preserve the behavior of prior releases.
+
+The Cosmos DB vNext emulator does not supply a default `kind`, so a container
+created from a `kind`-less partition key is left with a null `kind` that faults
+on later interactions. Set `inferPartitionKeyKind` to `true` against the vNext
+emulator so the `kind` is inferred client-side before the container is created.
+An explicitly declared `kind` is always respected, regardless of this setting.
+
 <a name="running-tests"></a>
 ## Running tests
 
@@ -164,14 +188,16 @@ Can understand two formats:
     {
       "accountEndpoint" : "https://[host]:[port]",
       "accountKey" : "[Account Key]", 
-      "databaseName" : "[Database Name]"
+      "databaseName" : "[Database Name]",
+      "connectionMode" : "[gateway|direct]"
     }
 ```
 so a json url looks like:
 ```url
 cosmosdb://{"accountEndpoint" : "https://localhost:8080", 
             "accountKey" : "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==", 
-            "databaseName" : "testdb1"}
+            "databaseName" : "testdb1",
+            "connectionMode" : "gateway"}
 ```
 
 #### CosmosDB URL like after the prefix 
@@ -181,7 +207,7 @@ cosmosdb://[host]:[accountKey]@[host]:[port]/[databaseName]?[Query Parameters]
 ```
 so a CosmosDB like url looks like:
 ```url
-cosmosdb://localhost:C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==@localhost:8080/testdb1
+cosmosdb://localhost:C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==@localhost:8080/testdb1?connectionMode=gateway
 ```
 
 <p>
@@ -189,6 +215,16 @@ Connection string for now doesn't conform to any standard was just too convenien
 Field names are case-sensitive and kept as upper camel case as in Cosmos documentation.
 Both formats accept other properties either as Json fields and respectively query parameters for future flexibility
 (the only meaningful for nou is ```ssl=true/false```)
+</p>
+
+<p>
+<code>connectionMode</code> is optional and controls whether the underlying
+Cosmos Java SDK client is built with <code>gatewayMode()</code> or
+<code>directMode()</code>. Accepted values are <code>gateway</code> and
+<code>direct</code> (case-insensitive). When omitted, no explicit mode is set
+and the SDK default applies, preserving prior behavior. Use
+<code>gateway</code> when connecting to the newer "vNext" Azure Cosmos DB
+Emulator, which only supports Gateway mode.
 </p>
 
 ### Run integration tests

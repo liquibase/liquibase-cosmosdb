@@ -2,10 +2,16 @@ package liquibase.ext.cosmosdb.statement;
 
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.CosmosException;
+import com.azure.cosmos.models.PartitionKind;
+import liquibase.Scope;
 import liquibase.ext.cosmosdb.AbstractCosmosWithConnectionIntegrationTest;
-import lombok.SneakyThrows;
+import liquibase.ext.cosmosdb.CosmosConfiguration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
+import java.util.Collections;
+
+import static liquibase.ext.cosmosdb.statement.JsonUtils.DEFAULT_PARTITION_KEY_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -13,9 +19,13 @@ class CreateContainerStatementIT extends AbstractCosmosWithConnectionIntegration
 
     public static final String CONTAINER_NAME_1 = "containerName1";
     public static final String PARTITION_KEY_PATH_1 = "{ \"partitionKey\": {\"paths\": [\"/partitionField1\"], \"kind\": \"Hash\" } }";
+    public static final String PARTITION_KEY_NO_KIND = "{ \"partitionKey\": {\"paths\": [\"/partitionField1\"] } }";
+    public static final String PARTITION_KEY_MULTI_NO_KIND = "{ \"partitionKey\": {\"paths\": [\"/tenantId\", \"/userId\"] } }";
+    public static final String PROPERTIES_NO_PARTITION_KEY =
+            "{ \"indexingPolicy\": { \"indexingMode\": \"consistent\", \"automatic\": true,"
+                    + " \"includedPaths\": [{\"path\": \"/*\"}], \"excludedPaths\": [] } }";
 
 
-    @SneakyThrows
     @Test
     void testExecute() {
         final CreateContainerStatement createContainerStatement
@@ -35,7 +45,6 @@ class CreateContainerStatementIT extends AbstractCosmosWithConnectionIntegration
 
     }
 
-    @SneakyThrows
     @Test
     void testExecuteWithThroughput() {
         CreateContainerStatement createContainerStatement
@@ -62,5 +71,41 @@ class CreateContainerStatementIT extends AbstractCosmosWithConnectionIntegration
         assertThat(cosmosContainer.read().getProperties().getId()).isEqualTo("container_auto");
         assertThat(cosmosContainer.readThroughput().getProperties().getAutoscaleMaxThroughput()).isEqualTo(8000);
 
+    }
+
+    @Test
+    void testExecuteDefaultsSinglePathKindToHash() throws Exception {
+        Scope.child(Collections.singletonMap(CosmosConfiguration.INFER_PARTITION_KEY_KIND.getKey(), true),
+                () -> new CreateContainerStatement("container_single_no_kind", PARTITION_KEY_NO_KIND).execute(database));
+
+        final CosmosContainer cosmosContainer = cosmosDatabase.getContainer("container_single_no_kind");
+        assertThat(cosmosContainer.read().getProperties().getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(PartitionKind.HASH, pk -> pk.getKind())
+                .satisfies(pk -> assertThat(pk.getPaths()).containsExactly("/partitionField1"));
+    }
+
+    @EnabledIfSystemProperty(named = "cosmos-supports-multihash-partition-keys", matches = "true")
+    @Test
+    void testExecuteDefaultsMultiPathKindToMultiHash() throws Exception {
+        Scope.child(Collections.singletonMap(CosmosConfiguration.INFER_PARTITION_KEY_KIND.getKey(), true),
+                () -> new CreateContainerStatement("container_multi_no_kind", PARTITION_KEY_MULTI_NO_KIND).execute(database));
+
+        final CosmosContainer cosmosContainer = cosmosDatabase.getContainer("container_multi_no_kind");
+        assertThat(cosmosContainer.read().getProperties().getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(PartitionKind.MULTI_HASH, pk -> pk.getKind())
+                .satisfies(pk -> assertThat(pk.getPaths()).containsExactly("/tenantId", "/userId"));
+    }
+
+    @Test
+    void testExecuteKeepsDefaultPathWhenPartitionKeyOmitted() {
+        new CreateContainerStatement("container_no_pk", PROPERTIES_NO_PARTITION_KEY).execute(database);
+
+        final CosmosContainer cosmosContainer = cosmosDatabase.getContainer("container_no_pk");
+        assertThat(cosmosContainer.read().getProperties().getPartitionKeyDefinition())
+                .isNotNull()
+                .returns(PartitionKind.HASH, pk -> pk.getKind())
+                .satisfies(pk -> assertThat(pk.getPaths()).containsExactly(DEFAULT_PARTITION_KEY_PATH));
     }
 }
