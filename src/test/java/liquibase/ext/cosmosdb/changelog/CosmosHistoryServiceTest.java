@@ -86,7 +86,17 @@ class CosmosHistoryServiceTest {
     @SneakyThrows
     @Test
     void testReset() {
+        // Without a connection the sequence starts from zero, so the values are predictable
+        // and the test does not need a running Cosmos instance.
+        final CosmosHistoryService historyService = new CosmosHistoryService();
+        historyService.setDatabase(new CosmosLiquibaseDatabase());
 
+        assertThat(historyService.getNextSequenceValue()).isEqualTo(1);
+        assertThat(historyService.getNextSequenceValue()).isEqualTo(2);
+
+        historyService.reset();
+
+        assertThat(historyService.getNextSequenceValue()).isEqualTo(1);
     }
 
     @Test
