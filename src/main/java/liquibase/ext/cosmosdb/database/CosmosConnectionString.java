@@ -23,6 +23,8 @@ public class CosmosConnectionString {
     public static final String ACCOUNT_KEY_PROPERTY = "accountKey";
     public static final String DATABASE_NAME_PROPERTY = "databaseName";
     public static final String CONNECTION_MODE_PROPERTY = "connectionMode";
+    public static final String USE_AZURE_IDENTITY_PROPERTY = "useAzureIdentity";
+    public static final String AZURE_USER_IDENTITY_PROPERTY = "user";
 
     public static final String COSMOSDB_PREFIX = "cosmosdb://";
     public static final String COSMOSDB_JSON_PREFIX = COSMOSDB_PREFIX + "{";
@@ -138,4 +140,14 @@ public class CosmosConnectionString {
                     }
                 });
     }
+
+    public Optional<Boolean> getUseAzureIdentity() {
+        return getProperty(USE_AZURE_IDENTITY_PROPERTY)
+                .map(Boolean::valueOf);
+    }
+
+    public Optional<String> getUserManagedIdentity() {
+        return getProperty(AZURE_USER_IDENTITY_PROPERTY);
+    }
+
 }
