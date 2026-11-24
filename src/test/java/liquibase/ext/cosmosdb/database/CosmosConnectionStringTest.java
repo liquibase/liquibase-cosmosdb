@@ -18,10 +18,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CosmosConnectionStringTest {
 
     public static final String TEST_COSMOS_JSON_CONNECTION_STRING_1 =
-            "cosmosdb://{\"accountEndpoint\" : \"https://ech-0a9d975b:8080\", \"accountKey\" : \"C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==\", \"databaseName\" : \"testdb1\" , \"ssl\" : \"true\" }";
+            "cosmosdb://{"
+            + "\"accountEndpoint\" : \"https://ech-0a9d975b:8080\","
+            + " \"accountKey\" : \"C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==\","
+            + " \"databaseName\" : \"testdb1\" ,"
+            + " \"ssl\" : \"true\" ,"
+            + " \"useAzureIdentity\" : \"true\" ,"
+            + " \"user\" : \"User_Managed_Identity\""
+            + "}";
 
     public static final String TEST_COSMOS_URL_CONNECTION_STRING_1 =
-            "cosmosdb://ech-0a9d975b:C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==@ech-0a9d975b:8080/testdb1?ssl=false";
+            "cosmosdb://ech-0a9d975b:C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==@ech-0a9d975b:8080/testdb1"
+            + "?ssl=false&useAzureIdentity=true&user=User_Managed_Identity";
 
 
 
@@ -165,6 +173,41 @@ class CosmosConnectionStringTest {
         }
     }
 
+    @Nested
+    class when_useAzureIdentity_is_invoked {
+        @Test
+        void given_no_use_then_empty_is_returned(){
+            assertThat(fromJsonConnectionString("cosmosdb://{}").getUseAzureIdentity()).isNotPresent();
+        }
+
+        @Test
+        void given_useAzureIdentity_is_true_then_return_true() {
+            assertThat(fromJsonConnectionString("cosmosdb://{\"useAzureIdentity\" : \"true\"}").getUseAzureIdentity()).hasValue(true);
+            assertThat(fromJsonConnectionString("cosmosdb://{\"useAzureIdentity\" : \"TRUE\"}").getUseAzureIdentity()).hasValue(true);
+            assertThat(fromJsonConnectionString("cosmosdb://{\"useAzureIdentity\" : \"TrUe\"}").getUseAzureIdentity()).hasValue(true);
+        }
+
+        @Test
+        void given_useAzureIdentity_is_anything_other_than_true_then_return_false() {
+            assertThat(fromJsonConnectionString("cosmosdb://{\"useAzureIdentity\" : \"y\"}").getUseAzureIdentity()).hasValue(false);
+            assertThat(fromJsonConnectionString("cosmosdb://{\"useAzureIdentity\" : \"1\"}").getUseAzureIdentity()).hasValue(false);
+            assertThat(fromJsonConnectionString("cosmosdb://{\"useAzureIdentity\" : \"YES\"}").getUseAzureIdentity()).hasValue(false);
+        }
+    }  
+
+    @Nested
+    class when_user_managed_identity_is_invoked {
+        @Test
+        void given_no_user_then_empty_is_returned(){
+            assertThat(fromJsonConnectionString("cosmosdb://{}").getUserManagedIdentity()).isNotPresent();
+        }
+        
+        @Test
+        void given_user_then_return_identity() {
+            assertThat(fromJsonConnectionString("cosmosdb://{\"user\" : \"User_Managed_Identity\"}").getUserManagedIdentity()).hasValue("User_Managed_Identity");
+        }
+    }
+
     @Test
     void fromConnectionStringTest() {
         final CosmosConnectionString cosmosJsonConnectionString
@@ -174,6 +217,8 @@ class CosmosConnectionStringTest {
                 .returns(Optional.of("https://ech-0a9d975b:8080"), CosmosConnectionString::getAccountEndpoint)
                 .returns(Optional.of("C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="), CosmosConnectionString::getAccountKey)
                 .returns(Optional.of("testdb1"), CosmosConnectionString::getDatabaseName)
+                .returns(Optional.of(true), CosmosConnectionString::getUseAzureIdentity)
+                .returns(Optional.of("User_Managed_Identity"), CosmosConnectionString::getUserManagedIdentity)
                 .returns(Optional.of("true"), c -> c.getProperty("ssl"))
                 .returns(Optional.empty(), c -> c.getProperty("notExisting"))
                 .returns(TEST_COSMOS_JSON_CONNECTION_STRING_1, CosmosConnectionString::getConnectionString);
@@ -185,6 +230,8 @@ class CosmosConnectionStringTest {
                 .returns(Optional.of("https://ech-0a9d975b:8080"), CosmosConnectionString::getAccountEndpoint)
                 .returns(Optional.of("C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="), CosmosConnectionString::getAccountKey)
                 .returns(Optional.of("testdb1"), CosmosConnectionString::getDatabaseName)
+                .returns(Optional.of(true), CosmosConnectionString::getUseAzureIdentity)
+                .returns(Optional.of("User_Managed_Identity"), CosmosConnectionString::getUserManagedIdentity)
                 .returns(Optional.of("false"), c -> c.getProperty("ssl"))
                 .returns(Optional.empty(), c -> c.getProperty("notExisting"))
                 .returns(TEST_COSMOS_URL_CONNECTION_STRING_1, CosmosConnectionString::getConnectionString);
